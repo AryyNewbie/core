@@ -46,7 +46,7 @@ namespace formula
 
 class FormulaCompiler;
 
-class FORMULA_DLLPUBLIC FormulaOpCodeMapperObj : public ::cppu::WeakImplHelper2<
+class FORMULA_DLLPUBLIC FormulaOpCodeMapperObj : public ::cppu::WeakImplHelper<
                             css::sheet::XFormulaOpCodeMapper,
                             css::lang::XServiceInfo >
 {
