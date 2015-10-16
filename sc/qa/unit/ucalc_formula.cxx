@@ -7269,6 +7269,8 @@ void Test::testTdf97369()
     m_pDoc->DeleteTab(0);
 }
 
+#if ! ( defined( MACOSX ) && ( MACOSX_SDK_VERSION == 1050 ) )
+
 void Test::testTdf97587()
 {
     const SCROW TOTAL_ROWS = 150;
@@ -7321,6 +7323,8 @@ void Test::testTdf97587()
     }
     m_pDoc->DeleteTab(0);
 }
+
+#endif
 
 void Test::testMatConcat()
 {

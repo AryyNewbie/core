@@ -159,6 +159,8 @@ DECLARE_OOXMLIMPORT_TEST(testImageHyperlink, "image-hyperlink.docx")
 
 #if !defined(_WIN32)
 
+#if !( defined(MACOSX) && (MACOSX_SDK_VERSION < 1060) )
+
 DECLARE_SW_IMPORT_TEST(testMathMalformedXml, "math-malformed_xml.docx", FailTest)
 {
     CPPUNIT_ASSERT(!mxComponent.is());
@@ -838,6 +840,8 @@ DECLARE_OOXMLIMPORT_TEST(testInk, "ink.docx")
     CPPUNIT_ASSERT(xServiceInfo->supportsService("com.sun.star.drawing.OpenBezierShape"));
 }
 
+#endif
+
 DECLARE_OOXMLIMPORT_TEST(testN779834, "n779834.docx")
 {
     // This document simply crashed the importer.
@@ -1090,6 +1094,8 @@ DECLARE_OOXMLIMPORT_TEST(testN785767, "n785767.docx")
     CPPUNIT_ASSERT_MESSAGE("B1 must not have default width", sal_Int16(10000 / 9) != getProperty< uno::Sequence<text::TableColumnSeparator> >(xTableRows->getByIndex(1), "TableColumnSeparators")[0].Position);
 }
 
+#if !( defined(MACOSX) && (MACOSX_SDK_VERSION < 1060) )
+
 DECLARE_OOXMLIMPORT_TEST(testN773061, "n773061.docx")
 {
 // xray ThisComponent.TextFrames(0).LeftBorderDistance
@@ -1101,6 +1107,8 @@ DECLARE_OOXMLIMPORT_TEST(testN773061, "n773061.docx")
     CPPUNIT_ASSERT_EQUAL( getProperty< sal_Int32 >( xFrame, "RightBorderDistance" ), sal_Int32( 0 ));
     CPPUNIT_ASSERT_EQUAL( getProperty< sal_Int32 >( xFrame, "BottomBorderDistance" ), sal_Int32( 0 ));
 }
+
+#endif
 
 DECLARE_OOXMLIMPORT_TEST(testN780645, "n780645.docx")
 {
@@ -1202,6 +1210,8 @@ DECLARE_OOXMLIMPORT_TEST(testGroupshapeLine, "groupshape-line.docx")
     CPPUNIT_ASSERT_EQUAL(sal_Int32(0), xShape->getSize().Height);
 }
 
+#if !( defined(MACOSX) && (MACOSX_SDK_VERSION < 1060) )
+
 DECLARE_OOXMLIMPORT_TEST(testGroupshapeChildRotation, "groupshape-child-rotation.docx")
 {
     // The problem was that (due to incorrect handling of rotation inside
@@ -1222,6 +1232,8 @@ DECLARE_OOXMLIMPORT_TEST(testGroupshapeChildRotation, "groupshape-child-rotation
     // This was com.sun.star.drawing.RectangleShape, all shape text in a single line.
     CPPUNIT_ASSERT_EQUAL(OUString("com.sun.star.drawing.TextShape"), xShapeDescriptor->getShapeType());
 }
+
+#endif
 
 DECLARE_OOXMLIMPORT_TEST(testGroupshapeSmarttag, "groupshape-smarttag.docx")
 {
@@ -1436,6 +1448,8 @@ DECLARE_OOXMLIMPORT_TEST(testFdo63685, "fdo63685.docx")
     CPPUNIT_ASSERT_EQUAL(sal_Int32(0), getProperty<sal_Int32>(getShape(1), "TopMargin"));
 }
 
+#if !( defined(MACOSX) && (MACOSX_SDK_VERSION < 1060) )
+
 DECLARE_OOXMLIMPORT_TEST(testN592908_Frame, "n592908-frame.docx")
 {
     uno::Reference<beans::XPropertySet> xPropertySet(getShape(1), uno::UNO_QUERY);
@@ -1443,6 +1457,8 @@ DECLARE_OOXMLIMPORT_TEST(testN592908_Frame, "n592908-frame.docx")
     xPropertySet->getPropertyValue("Surround") >>= eValue;
     CPPUNIT_ASSERT_EQUAL(eValue, text::WrapTextMode_PARALLEL);
 }
+
+#endif
 
 DECLARE_OOXMLIMPORT_TEST(testN592908_Picture, "n592908-picture.docx")
 {
@@ -1516,6 +1532,8 @@ DECLARE_OOXMLIMPORT_TEST(testN820509, "n820509.docx")
     CPPUNIT_ASSERT_EQUAL(sal_Int16(8), getProperty<sal_Int16>(xPropertySet, "DateFormat"));
 }
 
+#if !( defined(MACOSX) && (MACOSX_SDK_VERSION < 1060) )
+
 DECLARE_OOXMLIMPORT_TEST(testN820788, "n820788.docx")
 {
     // The problem was that AutoSize was not enabled for the text frame.
@@ -1525,6 +1543,8 @@ DECLARE_OOXMLIMPORT_TEST(testN820788, "n820788.docx")
     // This was text::SizeType::FIX.
     CPPUNIT_ASSERT_EQUAL(text::SizeType::MIN, getProperty<sal_Int16>(xFrame, "SizeType"));
 }
+
+#endif
 
 DECLARE_OOXMLIMPORT_TEST(testN820504, "n820504.docx")
 {
@@ -3057,6 +3077,8 @@ DECLARE_OOXMLIMPORT_TEST(testTdf60351, "tdf60351.docx")
     CPPUNIT_ASSERT_EQUAL(sal_Int32(0),   aPolygon[5].Y);
 }
 
+#if !( defined(MACOSX) && (MACOSX_SDK_VERSION < 1060) )
+
 DECLARE_OOXMLIMPORT_TEST(testTdf97417, "section_break_numbering.docx")
 {
     // paragraph with numbering and section break was removed by writerfilter
@@ -3068,6 +3090,8 @@ DECLARE_OOXMLIMPORT_TEST(testTdf97417, "section_break_numbering.docx")
         !xProps->getPropertyValue("NumberingRules").hasValue());
 
 }
+
+#endif
 
 DECLARE_OOXMLIMPORT_TEST(testTdf95970, "tdf95970.docx")
 {
@@ -3134,6 +3158,8 @@ DECLARE_OOXMLIMPORT_TEST(testTdf95213, "tdf95213.docx")
     CPPUNIT_ASSERT_EQUAL(awt::FontWeight::NORMAL, getProperty<float>(xStyle, "CharWeight"));
 }
 
+#if !( defined(MACOSX) && (MACOSX_SDK_VERSION < 1060) )
+
 DECLARE_OOXMLIMPORT_TEST(testTdf97371, "tdf97371.docx")
 {
     SwXTextDocument* pTextDoc = dynamic_cast<SwXTextDocument *>(mxComponent.get());
@@ -3146,6 +3172,8 @@ DECLARE_OOXMLIMPORT_TEST(testTdf97371, "tdf97371.docx")
     // The top of the two shapes were 410 and 3951, now it should be 3950 and 3951.
     CPPUNIT_ASSERT(nDiff < 10);
 }
+
+#endif
 
 // base class to supply a helper method for testHFLinkToPrev
 class testHFBase : public Test
