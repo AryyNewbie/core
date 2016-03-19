@@ -625,7 +625,7 @@ bool SdrFractionItem::GetPresentation(
     SfxItemPresentation ePresentation, MapUnit /*eCoreMetric*/,
     MapUnit /*ePresentationMetric*/, OUString &rText, const IntlWrapper *) const
 {
-    if(nValue.IsValid())
+    if( nValue.IsOkay() )
     {
         sal_Int32 nDiv = nValue.GetDenominator();
         rText = OUString::number(nValue.GetNumerator());
@@ -679,7 +679,7 @@ bool SdrScaleItem::GetPresentation(
     SfxItemPresentation ePresentation, MapUnit /*eCoreMetric*/,
     MapUnit /*ePresentationMetric*/, OUString &rText, const IntlWrapper *) const
 {
-    if(GetValue().IsValid())
+    if( GetValue().IsOkay() )
     {
         sal_Int32 nDiv = GetValue().GetDenominator();
 
