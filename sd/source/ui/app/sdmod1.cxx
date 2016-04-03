@@ -406,7 +406,7 @@ void SdModule::GetState(SfxItemSet& rItemSet)
         {
             ::sd::ViewShell* pViewShell = pDocShell->GetViewShell();
 
-            if( pViewShell && (pDocShell->GetDocumentType() == DOCUMENT_TYPE_IMPRESS) )
+            if( pViewShell && ( pDocShell->GetDocumentType() == DocumentType::Impress ) )
             {
                 // add our event listener as soon as possible
                 Application::AddEventListener( LINK( this, SdModule, EventListenerHdl ) );
@@ -436,7 +436,7 @@ IMPL_STATIC_LINK( SdModule, EventListenerHdl, VclSimpleEvent&, rSimpleEvent, voi
                         ::sd::ViewShell* pViewShell = pDocShell->GetViewShell();
 
                         // #i97925# start the presentation if and only if an Impress document is focused
-                        if( pViewShell && (pDocShell->GetDocumentType() == DOCUMENT_TYPE_IMPRESS) )
+                        if( pViewShell && ( pDocShell->GetDocumentType() == DocumentType::Impress ) )
                             pViewShell->GetViewFrame()->GetDispatcher()->Execute( SID_PRESENTATION );
                     }
                     break;
@@ -448,7 +448,6 @@ IMPL_STATIC_LINK( SdModule, EventListenerHdl, VclSimpleEvent&, rSimpleEvent, voi
         }
     }
 }
-
 
 SfxFrame* SdModule::CreateFromTemplate( const OUString& rTemplatePath, const Reference< XFrame >& i_rFrame )
 {
@@ -488,7 +487,7 @@ SfxFrame* SdModule::ExecuteNewDocument( SfxRequest& rReq )
         if ( pFrmItem )
             xTargetFrame = pFrmItem->GetFrame();
 
-        SdOptions* pOpt = GetSdOptions(DOCUMENT_TYPE_IMPRESS);
+        SdOptions* pOpt = GetSdOptions( DocumentType::Impress );
         bool bStartWithTemplate = pOpt->IsStartWithTemplate();
 
         bool bNewDocDirect = rReq.GetSlot() == SID_NEWSD;
@@ -537,7 +536,7 @@ SfxFrame* SdModule::CreateEmptyDocument( const Reference< XFrame >& i_rFrame )
 
     SfxObjectShellLock xDocShell;
     ::sd::DrawDocShell* pNewDocSh;
-    xDocShell = pNewDocSh = new ::sd::DrawDocShell(SfxObjectCreateMode::STANDARD,false,DOCUMENT_TYPE_IMPRESS);
+    xDocShell = pNewDocSh = new ::sd::DrawDocShell( SfxObjectCreateMode::STANDARD, false, DocumentType::Impress );
     pNewDocSh->DoInitNew();
     SdDrawDocument* pDoc = pNewDocSh->GetDoc();
     if (pDoc)
@@ -553,7 +552,172 @@ SfxFrame* SdModule::CreateEmptyDocument( const Reference< XFrame >& i_rFrame )
     return pFrame;
 }
 
+<<<<<<< 2bfb02634e2b78f85f82d0a6b646a258382ee5ff
 //===== OutlineToImpressFinalize ==============================================
+=======
+void SdModule::ChangeMedium( ::sd::DrawDocShell* pDocShell, SfxViewFrame* pViewFrame, const sal_Int32 eMedium )
+{
+    if( !pDocShell )
+        return;
+
+    SdDrawDocument* pDoc = pDocShell->GetDoc();
+    if( !pDoc )
+        return;
+
+    // settings for the Outputmedium
+    Size aNewSize;
+    sal_uInt32 nLeft = 0;
+    sal_uInt32 nRight = 0;
+    sal_uInt32 nLower = 0;
+    sal_uInt32 nUpper = 0;
+    switch(eMedium)
+    {
+        case OUTPUT_PAGE:
+        case OUTPUT_OVERHEAD:
+        {
+            SfxPrinter* pPrinter = pDocShell->GetPrinter(true);
+
+            if( pPrinter && pPrinter->IsValid())
+            {
+                // Unfortunately, the printer does not provide an exact format
+                // like A4
+                Size aSize(pPrinter->GetPaperSize());
+                Paper ePaper = SvxPaperInfo::GetSvxPaper( aSize, MAP_100TH_MM, true);
+
+                if (ePaper != PAPER_USER)
+                {
+                    // get correct size
+                    aSize = SvxPaperInfo::GetPaperSize(ePaper, MAP_100TH_MM);
+                }
+
+                if (aSize.Height() > aSize.Width())
+                {
+                     // always landscape
+                     aNewSize.Width()  = aSize.Height();
+                     aNewSize.Height() = aSize.Width();
+                }
+                else
+                {
+                     aNewSize = aSize;
+                }
+            }
+            else
+            {
+                aNewSize=Size(29700, 21000);
+            }
+
+            if (eMedium == OUTPUT_PAGE)
+            {
+                nLeft =1000;
+                nRight=1000;
+                nUpper=1000;
+                nLower=1000;
+            }
+            else
+            {
+                nLeft =0;
+                nRight=0;
+                nUpper=0;
+                nLower=0;
+            }
+        }
+        break;
+
+        case OUTPUT_SLIDE:
+        {
+            aNewSize = Size(27000, 18000);
+            nLeft =0;
+            nRight=0;
+            nUpper=0;
+            nLower=0;
+        }
+        break;
+
+        case OUTPUT_WIDESCREEN:
+        {
+            aNewSize = Size(28000, 15750);
+            nLeft =0;
+            nRight=0;
+            nUpper=0;
+            nLower=0;
+        }
+        break;
+
+        case OUTPUT_PRESENTATION:
+        {
+            aNewSize = Size(28000, 21000);
+            nLeft =0;
+            nRight=0;
+            nUpper=0;
+            nLower=0;
+        }
+        break;
+    }
+
+    bool bScaleAll = true;
+    sal_uInt16 nPageCnt = pDoc->GetMasterSdPageCount( PageKind::Standard );
+    sal_uInt16 i;
+    SdPage* pPage;
+
+    // master pages first
+    for (i = 0; i < nPageCnt; i++)
+    {
+        pPage = pDoc->GetMasterSdPage( i, PageKind::Standard );
+
+        if (pPage)
+        {
+            if(eMedium != OUTPUT_ORIGINAL)
+            {
+                Rectangle aBorderRect(nLeft, nUpper, nRight, nLower);
+                pPage->ScaleObjects(aNewSize, aBorderRect, bScaleAll);
+                pPage->SetSize(aNewSize);
+                pPage->SetBorder(nLeft, nUpper, nRight, nLower);
+            }
+            SdPage* pNotesPage = pDoc->GetMasterSdPage( i, PageKind::Notes );
+            if( pNotesPage )
+                pNotesPage->CreateTitleAndLayout();
+            else
+                SAL_WARN( "sd.ui", "unexpected page ordering" );
+            pPage->CreateTitleAndLayout();
+        }
+    }
+
+    nPageCnt = pDoc->GetSdPageCount( PageKind::Standard );
+
+    // then slides
+    for (i = 0; i < nPageCnt; i++)
+    {
+        pPage = pDoc->GetSdPage( i, PageKind::Standard );
+
+        if (pPage)
+        {
+            if(eMedium != OUTPUT_ORIGINAL)
+            {
+                Rectangle aBorderRect(nLeft, nUpper, nRight, nLower);
+                pPage->ScaleObjects(aNewSize, aBorderRect, bScaleAll);
+                pPage->SetSize(aNewSize);
+                pPage->SetBorder(nLeft, nUpper, nRight, nLower);
+            }
+            SdPage* pNotesPage = pDoc->GetSdPage( i, PageKind::Notes );
+            if( pNotesPage )
+                pNotesPage->SetAutoLayout( pNotesPage->GetAutoLayout() );
+            else
+                SAL_WARN( "sd.ui", "unexpected page ordering" );
+            pPage->SetAutoLayout( pPage->GetAutoLayout() );
+        }
+    }
+
+    SdPage* pHandoutPage = pDoc->GetSdPage( 0, PageKind::Handout );
+    pHandoutPage->CreateTitleAndLayout(true);
+
+    if( (eMedium != OUTPUT_ORIGINAL) && pViewFrame && pViewFrame->GetDispatcher())
+    {
+        pViewFrame->GetDispatcher()->Execute(SID_SIZE_PAGE, SfxCallMode::SYNCHRON | SfxCallMode::RECORD);
+    }
+}
+
+//===== OutlineToImpressFinalizer ==============================================
+>>>>>>> sd: convert DocumentType PageKind EditMode NavigatorDragType to enum class
 
 namespace {
 
@@ -638,10 +802,10 @@ void OutlineToImpressFinalizer::operator() (bool)
 
         // Call UpdatePreview once for every slide to resync the
         // document with the outliner of the OutlineViewShell.
-        sal_uInt16 nPageCount (mrDocument.GetSdPageCount(PK_STANDARD));
-        for (sal_uInt16 nIndex=0; nIndex<nPageCount; nIndex++)
+        sal_uInt32 nPageCount = mrDocument.GetSdPageCount( PageKind::Standard );
+        for ( sal_uInt32 nIndex = 0; nIndex < nPageCount; nIndex++ )
         {
-            SdPage* pPage = mrDocument.GetSdPage(nIndex, PK_STANDARD);
+            SdPage* pPage = mrDocument.GetSdPage( nIndex, PageKind::Standard );
             // Make the page the actual page so that the
             // following UpdatePreview() call accesses the
             // correct paragraphs.
@@ -649,7 +813,7 @@ void OutlineToImpressFinalizer::operator() (bool)
             pOutlineShell->UpdatePreview(pPage, true);
         }
         // Select the first slide.
-        SdPage* pPage = mrDocument.GetSdPage(0, PK_STANDARD);
+        SdPage* pPage = mrDocument.GetSdPage( 0, PageKind::Standard );
         pView->SetActualPage(pPage);
         pOutlineShell->UpdatePreview(pPage, true);
     }

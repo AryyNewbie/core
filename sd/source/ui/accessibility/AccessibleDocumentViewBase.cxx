@@ -63,7 +63,7 @@ AccessibleDocumentViewBase::AccessibleDocumentViewBase (
     const uno::Reference<frame::XController>& rxController,
     const uno::Reference<XAccessible>& rxParent)
     : AccessibleContextBase (rxParent,
-                             pViewShell->GetDoc()->GetDocumentType() == DOCUMENT_TYPE_IMPRESS ?
+                             pViewShell->GetDoc()->GetDocumentType() == DocumentType::Impress ?
                                      AccessibleRole::DOCUMENT_PRESENTATION :
                                      AccessibleRole::DOCUMENT),
       mpWindow (pSdWindow),
@@ -791,7 +791,7 @@ uno::Any SAL_CALL AccessibleDocumentViewBase::getExtendedAttributes()
         ::sd::PresentationViewShell* pPresViewSh = static_cast< ::sd::PresentationViewShell*>(mpViewShell);
         SdPage* pCurrPge = pPresViewSh->getCurrentPage();
         SdDrawDocument* pDoc = pPresViewSh->GetDoc();
-        SdPage* pNotesPge = pDoc->GetSdPage((pCurrPge->GetPageNum()-1)>>1, PK_NOTES);
+        SdPage* pNotesPge = pDoc->GetSdPage( ( pCurrPge->GetPageNum() - 1 ) >> 1, PageKind::Notes );
         if (pNotesPge)
         {
             SdrObject* pNotesObj = pNotesPge->GetPresObj(PRESOBJ_NOTES);
@@ -837,7 +837,7 @@ uno::Any SAL_CALL AccessibleDocumentViewBase::getExtendedAttributes()
             sValue += OUString::number((sal_Int16)((sal_uInt16)((pCurrPge->GetPageNum()-1)>>1) + 1)) ;
             sName = ";total-pages:";
             sValue += sName;
-            sValue += OUString::number(pDoc->GetSdPageCount(PK_STANDARD)) ;
+            sValue += OUString::number(pDoc->GetSdPageCount( PageKind::Standard )) ;
             sValue += ";";
         }
     }

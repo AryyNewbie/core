@@ -563,7 +563,7 @@ sal_uInt16 ViewShellBase::SetPrinter (
         if (pDrawViewShell)
         {
             SdPage* pPage = GetDocument()->GetSdPage(
-                0, PK_STANDARD );
+                0, PageKind::Standard );
             pDrawViewShell->SetPageSizeAndBorder (
                 pDrawViewShell->GetPageKind(),
                 aNewSize,
@@ -721,13 +721,13 @@ void ViewShellBase::ReadUserDataSequence (
                 switch (dynamic_cast<DrawViewShell&>(*pShell).GetPageKind())
                 {
                     default:
-                    case PK_STANDARD:
+                    case PageKind::Standard:
                         sViewURL = framework::FrameworkHelper::msImpressViewURL;
                         break;
-                    case PK_NOTES:
+                    case PageKind::Notes:
                         sViewURL = framework::FrameworkHelper::msNotesViewURL;
                         break;
-                    case PK_HANDOUT:
+                    case PageKind::Handout:
                         sViewURL = framework::FrameworkHelper::msHandoutViewURL;
                         break;
                 }
@@ -899,15 +899,15 @@ OUString ViewShellBase::GetInitialViewShellType()
                 rProperty.Value >>= nPageKind;
                 switch ((PageKind)nPageKind)
                 {
-                    case PK_STANDARD:
+                    case PageKind::Standard:
                         sRequestedView = FrameworkHelper::msImpressViewURL;
                         break;
 
-                    case PK_HANDOUT:
+                    case PageKind::Handout:
                         sRequestedView = FrameworkHelper::msHandoutViewURL;
                         break;
 
-                    case PK_NOTES:
+                    case PageKind::Notes:
                         sRequestedView = FrameworkHelper::msNotesViewURL;
                         break;
 
@@ -1336,11 +1336,11 @@ void ViewShellBase::Implementation::GetSlotState (SfxItemSet& rSet)
                         case SID_DRAWINGMODE:
                         case SID_NORMAL_MULTI_PANE_GUI:
                         case SID_NOTES_MODE:
-                            bState = pShell->GetEditMode() == EM_PAGE;
+                            bState = pShell->GetEditMode() == EditMode::Page;
                             break;
                         case SID_SLIDE_MASTER_MODE:
                         case SID_NOTES_MASTER_MODE:
-                            bState = pShell->GetEditMode() == EM_MASTERPAGE;
+                            bState = pShell->GetEditMode() == EditMode::MasterPage;
                             break;
                     }
                 }
@@ -1379,14 +1379,14 @@ void CurrentPageSetter::operator() (bool)
         pFrameView = mrBase.GetMainViewShell()->GetFrameView();
     }
 
-    if (pFrameView!=nullptr)
+    if ( pFrameView )
     {
         try
         {
             // Get the current page either from the DrawPagesSupplier or the
             // MasterPagesSupplier.
             Any aPage;
-            if (pFrameView->GetViewShEditModeOnLoad() == EM_PAGE)
+            if ( pFrameView->GetViewShEditModeOnLoad() == EditMode::Page )
             {
                 Reference<drawing::XDrawPagesSupplier> xPagesSupplier (
                     mrBase.GetController()->getModel(), UNO_QUERY_THROW);

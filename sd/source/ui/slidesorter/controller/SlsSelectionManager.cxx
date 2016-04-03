@@ -118,7 +118,7 @@ void SelectionManager::DeleteSelectedPages (const bool bSelectFollowingPage)
     // helper functions.  They are specialized for normal respectively for
     // master pages.
     mrSlideSorter.GetView().BegUndo (SdResId(STR_UNDO_DELETEPAGES));
-    if (mrSlideSorter.GetModel().GetEditMode() == EM_PAGE)
+    if ( mrSlideSorter.GetModel().GetEditMode() == EditMode::Page )
         DeleteSelectedNormalPages(aSelectedPages);
     else
         DeleteSelectedMasterPages(aSelectedPages);
@@ -149,8 +149,8 @@ void SelectionManager::DeleteSelectedPages (const bool bSelectFollowingPage)
 
 void SelectionManager::DeleteSelectedNormalPages (const ::std::vector<SdPage*>& rSelectedPages)
 {
-    // Prepare the deletion via the UNO API.
-    OSL_ASSERT(mrSlideSorter.GetModel().GetEditMode() == EM_PAGE);
+    // Prepare the deletion via the UNO API
+    OSL_ASSERT( mrSlideSorter.GetModel().GetEditMode() == EditMode::Page );
 
     try
     {
@@ -182,8 +182,8 @@ void SelectionManager::DeleteSelectedNormalPages (const ::std::vector<SdPage*>& 
 
 void SelectionManager::DeleteSelectedMasterPages (const ::std::vector<SdPage*>& rSelectedPages)
 {
-    // Prepare the deletion via the UNO API.
-    OSL_ASSERT(mrSlideSorter.GetModel().GetEditMode() == EM_MASTERPAGE);
+    // Prepare the deletion via the UNO API
+    OSL_ASSERT( mrSlideSorter.GetModel().GetEditMode() == EditMode::MasterPage );
 
     try
     {

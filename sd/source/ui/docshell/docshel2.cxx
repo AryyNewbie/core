@@ -66,28 +66,28 @@ void DrawDocShell::Draw(OutputDevice* pOut, const JobSetup&, sal_uInt16 nAspect)
     if( !rViews.empty() )
     {
         sd::FrameView* pFrameView = rViews[0];
-        if( pFrameView->GetPageKind() == PK_STANDARD )
+        if( pFrameView->GetPageKind() == PageKind::Standard )
         {
             sal_uInt16 nSelectedPage = pFrameView->GetSelectedPage();
-            pSelectedPage = mpDoc->GetSdPage(nSelectedPage, PK_STANDARD);
+            pSelectedPage = mpDoc->GetSdPage( nSelectedPage, PageKind::Standard );
         }
     }
 
-    if( nullptr == pSelectedPage )
+    if( ! pSelectedPage )
     {
         SdPage* pPage = nullptr;
-        sal_uInt16 nPageCnt = (sal_uInt16) mpDoc->GetSdPageCount(PK_STANDARD);
+        sal_uInt32 nPageCnt = mpDoc->GetSdPageCount( PageKind::Standard );
 
-        for (sal_uInt16 i = 0; i < nPageCnt; i++)
+        for ( sal_uInt32 i = 0; i < nPageCnt; i++ )
         {
-            pPage = mpDoc->GetSdPage(i, PK_STANDARD);
+            pPage = mpDoc->GetSdPage( i, PageKind::Standard );
 
             if ( pPage->IsSelected() )
                 pSelectedPage = pPage;
         }
 
-        if( nullptr == pSelectedPage )
-            pSelectedPage = mpDoc->GetSdPage(0, PK_STANDARD);
+        if( ! pSelectedPage )
+            pSelectedPage = mpDoc->GetSdPage( 0, PageKind::Standard );
     }
 
     Rectangle aVisArea = GetVisArea(nAspect);
@@ -128,10 +128,10 @@ Rectangle DrawDocShell::GetVisArea(sal_uInt16 nAspect) const
     if( ( ASPECT_THUMBNAIL == nAspect ) || ( ASPECT_DOCPRINT == nAspect ) )
     {
         // provide size of first page
-        MapMode aSrcMapMode(MapUnit::MapPixel);
-        MapMode aDstMapMode(MapUnit::Map100thMM);
-        Size aSize = mpDoc->GetSdPage(0, PK_STANDARD)->GetSize();
-        aSrcMapMode.SetMapUnit(MapUnit::Map100thMM);
+        MapMode aSrcMapMode( MapUnit::MapPixel );
+        MapMode aDstMapMode( MapUnit::Map100thMM );
+        Size aSize = mpDoc->GetSdPage( 0, PageKind::Standard )->GetSize();
+        aSrcMapMode.SetMapUnit( MapUnit::Map100thMM );
 
         aSize = Application::GetDefaultDevice()->LogicToLogic(aSize, &aSrcMapMode, &aDstMapMode);
         aVisArea.SetSize(aSize);

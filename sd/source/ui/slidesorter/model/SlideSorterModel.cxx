@@ -103,7 +103,7 @@ SlideSorterModel::SlideSorterModel (SlideSorter& rSlideSorter)
     : maMutex(),
       mrSlideSorter(rSlideSorter),
       mxSlides(),
-      meEditMode(EM_PAGE),
+      meEditMode( EditMode::Page ),
       maPageDescriptors(0)
 {
 }
@@ -278,7 +278,7 @@ void SlideSorterModel::Resync()
     // Check if document and this model really differ.
     bool bIsUpToDate (true);
     SdDrawDocument* pDocument = GetDocument();
-    if (pDocument!=nullptr && maPageDescriptors.size()==pDocument->GetSdPageCount(PK_STANDARD))
+    if ( pDocument != nullptr && maPageDescriptors.size() == pDocument->GetSdPageCount( PageKind::Standard ) )
     {
         for (sal_Int32 nIndex=0,nCount=maPageDescriptors.size(); nIndex<nCount; ++nIndex)
         {
@@ -439,7 +439,7 @@ void SlideSorterModel::UpdatePageList()
     {
         switch (meEditMode)
         {
-            case EM_MASTERPAGE:
+            case EditMode::MasterPage:
             {
                 Reference<drawing::XMasterPagesSupplier> xSupplier (
                     xController->getModel(), UNO_QUERY);
@@ -450,7 +450,7 @@ void SlideSorterModel::UpdatePageList()
             }
             break;
 
-            case EM_PAGE:
+            case EditMode::Page:
             {
                 Reference<drawing::XDrawPagesSupplier> xSupplier (
                     xController->getModel(), UNO_QUERY);
@@ -527,9 +527,9 @@ bool SlideSorterModel::NotifyPageEvent (const SdrPage* pSdrPage)
 
     // We are only interested in pages that are currently served by this
     // model.
-    if (pPage->GetPageKind() != PK_STANDARD)
+    if ( pPage->GetPageKind() != PageKind::Standard )
         return false;
-    if (pPage->IsMasterPage() != (meEditMode==EM_MASTERPAGE))
+    if ( pPage->IsMasterPage() != ( meEditMode == EditMode::MasterPage ) )
         return false;
 
     //NotifyPageEvent is called for add, remove, *and* change position so for
@@ -633,12 +633,12 @@ void SlideSorterModel::UpdateIndices (const sal_Int32 nFirstIndex)
 SdPage* SlideSorterModel::GetPage (const sal_Int32 nSdIndex) const
 {
     SdDrawDocument* pModel = const_cast<SlideSorterModel*>(this)->GetDocument();
-    if (pModel != nullptr)
+    if ( pModel )
     {
-        if (meEditMode == EM_PAGE)
-            return pModel->GetSdPage ((sal_uInt16)nSdIndex, PK_STANDARD);
+        if ( meEditMode == EditMode::Page )
+            return pModel->GetSdPage( (sal_uInt16)nSdIndex, PageKind::Standard );
         else
-            return pModel->GetMasterSdPage ((sal_uInt16)nSdIndex, PK_STANDARD);
+            return pModel->GetMasterSdPage( (sal_uInt16)nSdIndex, PageKind::Standard );
     }
     else
         return nullptr;
