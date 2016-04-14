@@ -239,7 +239,7 @@ void Menu::Deactivate()
     {
         MenuItemData* pData = pItemList->GetDataFromPos( --n );
         if ( pData->bIsTemporary )
-            pItemList->Remove( n );
+            pItemList->RemoveMenuItem( n );
     }
 
     bInCallback = true;
@@ -367,8 +367,8 @@ MenuItemData* Menu::NbcInsertItem(sal_uInt16 nId, MenuItemBits nBits,
                                   size_t nPos, const OString &rIdent)
 {
     // put Item in MenuItemList
-    MenuItemData* pData = pItemList->Insert(nId, MenuItemType::STRING,
-                             nBits, rStr, Image(), pMenu, nPos, rIdent);
+    MenuItemData* pData = pItemList->InsertMenuItem( nId, MenuItemType::STRING,
+                             nBits, rStr, Image(), pMenu, nPos, rIdent );
 
     // update native menu
     if (ImplGetSalMenu() && pData->pSalMenuItem)
@@ -522,6 +522,8 @@ void Menu::InsertItem(const OUString& rCommand, const css::uno::Reference<css::f
 
 void Menu::InsertSeparator(const OString &rIdent, sal_uInt16 nPos)
 {
+    SAL_WARN( "vcl", "Menu::InsertSeparator with ident \"" << rIdent << "\" & position " << nPos );
+
     // do nothing if it's a menu bar
     if (IsMenuBar())
         return;
@@ -531,13 +533,13 @@ void Menu::InsertSeparator(const OString &rIdent, sal_uInt16 nPos)
         nPos = MENU_APPEND;
 
     // put separator in item list
-    pItemList->InsertSeparator(rIdent, nPos);
+    MenuItemData *pData = pItemList->InsertSeparator( rIdent, nPos );
 
     // update native menu
-    size_t itemPos = ( nPos != MENU_APPEND ) ? nPos : pItemList->size() - 1;
-    MenuItemData *pData = pItemList->GetDataFromPos( itemPos );
     if( ImplGetSalMenu() && pData && pData->pSalMenuItem )
+    {
         ImplGetSalMenu()->InsertItem( pData->pSalMenuItem, nPos );
+    }
 
     delete mpLayoutData;
     mpLayoutData = nullptr;
@@ -555,7 +557,7 @@ void Menu::RemoveItem( sal_uInt16 nPos )
         if( ImplGetSalMenu() )
             ImplGetSalMenu()->RemoveItem( nPos );
 
-        pItemList->Remove( nPos );
+        pItemList->RemoveMenuItem( nPos );
         bRemove = true;
     }
 
@@ -1409,7 +1411,7 @@ bool Menu::ImplGetNativeSubmenuArrowSize(vcl::RenderContext& rRenderContext, Siz
 
 void Menu::ImplAddDel( ImplMenuDelData& rDel )
 {
-    SAL_WARN_IF( rDel.mpMenu, "vcl", "Menu::ImplAddDel(): cannot add ImplMenuDelData twice !" );
+    SAL_WARN_IF( rDel.mpMenu, "vcl", "Menu::ImplAddDel(): cannot add ImplMenuDelData twice" );
     if( !rDel.mpMenu )
     {
         rDel.mpMenu = this;
