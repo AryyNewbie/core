@@ -180,7 +180,7 @@ void MenuBarWindow::dispose()
 void MenuBarWindow::SetMenu( MenuBar* pMen )
 {
     pMenu = pMen;
-    KillActivePopup();
+    FreeActivePopup();
     nHighlightedItem = ITEMPOS_INVALID;
     if (pMen)
     {
@@ -290,7 +290,7 @@ void MenuBarWindow::ImplCreatePopup( bool bPreSelectFirst )
         bIgnoreFirstMove = true;
         if ( pActivePopup && ( pActivePopup != pItemData->pSubMenu ) )
         {
-            KillActivePopup();
+            FreeActivePopup();
         }
         if ( pItemData->bEnabled && pItemData->pSubMenu && ( nHighlightedItem != ITEMPOS_INVALID ) &&
              ( pItemData->pSubMenu != pActivePopup ) )
@@ -330,7 +330,7 @@ void MenuBarWindow::ImplCreatePopup( bool bPreSelectFirst )
     }
 }
 
-void MenuBarWindow::KillActivePopup()
+void MenuBarWindow::FreeActivePopup()
 {
     if ( pActivePopup )
     {
@@ -360,7 +360,7 @@ void MenuBarWindow::PopupClosed( Menu* pPopup )
 {
     if ( pPopup == pActivePopup )
     {
-        KillActivePopup();
+        FreeActivePopup();
         ChangeHighlightItem( ITEMPOS_INVALID, false, ImplGetFrameWindow()->ImplGetFrameData()->mbHasFocus, false );
     }
 }
@@ -376,7 +376,7 @@ void MenuBarWindow::MouseButtonDown( const MouseEvent& rMEvt )
     }
     else
     {
-        KillActivePopup();
+        FreeActivePopup();
         ChangeHighlightItem( ITEMPOS_INVALID, false );
     }
 }
@@ -447,7 +447,7 @@ void MenuBarWindow::ChangeHighlightItem( sal_uInt16 n, bool bSelectEntry, bool b
     // #57934# close active popup if applicable, as TH's background storage works.
     MenuItemData* pNextData = pMenu->pItemList->GetDataFromPos( n );
     if ( pActivePopup && pActivePopup->ImplGetWindow() && ( !pNextData || ( pActivePopup != pNextData->pSubMenu ) ) )
-        KillActivePopup(); // pActivePopup when applicable without pWin, if Rescheduled in  Activate()
+        FreeActivePopup(); // pActivePopup when applicable without pWin, if Rescheduled in  Activate()
 
     // activate menubar only ones per cycle...
     bool bJustActivated = false;
@@ -778,7 +778,7 @@ bool MenuBarWindow::HandleKeyEvent( const KeyEvent& rKEvent, bool bFromMenu )
         }
         else if ( nCode == KEY_RETURN )
         {
-            if( pActivePopup ) KillActivePopup();
+            if( pActivePopup ) FreeActivePopup();
             else
                 if ( !mbAutoPopup )
                 {
@@ -802,7 +802,7 @@ bool MenuBarWindow::HandleKeyEvent( const KeyEvent& rKEvent, bool bFromMenu )
             {
                 // hide the menu and remove the focus...
                 mbAutoPopup = false;
-                KillActivePopup();
+                FreeActivePopup();
             }
 
             ChangeHighlightItem( ITEMPOS_INVALID, false );
@@ -984,7 +984,7 @@ void MenuBarWindow::StateChanged( StateChangedType nType )
     }
     else if(pMenu)
     {
-        pMenu->ImplKillLayoutData();
+        pMenu->ImplBinLayoutData();
     }
 }
 
@@ -1010,7 +1010,7 @@ void MenuBarWindow::LayoutChanged()
     Invalidate();
     Resize();
 
-    pMenu->ImplKillLayoutData();
+    pMenu->ImplBinLayoutData();
 }
 
 void MenuBarWindow::ApplySettings(vcl::RenderContext& rRenderContext)
