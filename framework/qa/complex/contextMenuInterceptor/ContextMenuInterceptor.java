@@ -58,41 +58,44 @@ public class ContextMenuInterceptor implements XContextMenuInterceptor
 
                 // query sub menu for index container to get access
                 com.sun.star.container.XIndexContainer xSubMenuContainer =
-                        UnoRuntime.queryInterface(com.sun.star.container.XIndexContainer.class, xMenuElementFactory.createInstance("com.sun.star.ui.ActionTriggerContainer"));
+                        UnoRuntime.queryInterface( com.sun.star.container.XIndexContainer.class,
+                                                   xMenuElementFactory.createInstance( "com.sun.star.ui.ActionTriggerContainer" ) );
 
                 // intialize root menu entry "Help"
-                xRootMenuEntry.setPropertyValue("Text", "Help");
-                xRootMenuEntry.setPropertyValue("CommandURL", "slot:5410");
-                xRootMenuEntry.setPropertyValue("HelpURL", "5410");
-                xRootMenuEntry.setPropertyValue("SubContainer", xSubMenuContainer);
-                xRootMenuEntry.setPropertyValue("Image", myBitmap);
+                xRootMenuEntry.setPropertyValue( "Text", "Help" ) ;
+                xRootMenuEntry.setPropertyValue( "ActionURL", "slot:5410" ) ;
+                xRootMenuEntry.setPropertyValue( "HelpURL", "5410" ) ;
+                xRootMenuEntry.setPropertyValue( "SubContainer", xSubMenuContainer ) ;
+                xRootMenuEntry.setPropertyValue( "Image", myBitmap ) ;
 
                 // create menu entries for the new sub menu
                 // intialize help/content menu entry
                 // entry "Content"
-                XPropertySet xMenuEntry = UnoRuntime.queryInterface(XPropertySet.class, xMenuElementFactory.createInstance("com.sun.star.ui.ActionTrigger"));
-                xMenuEntry.setPropertyValue("Text", "Content");
-                xMenuEntry.setPropertyValue("CommandURL", "slot:5401");
-                xMenuEntry.setPropertyValue("HelpURL", "5401");
+                XPropertySet xMenuEntry = UnoRuntime.queryInterface( XPropertySet.class,
+                                                                     xMenuElementFactory.createInstance( "com.sun.star.ui.ActionTrigger" ) );
+                xMenuEntry.setPropertyValue( "Text", "Content" ) ;
+                xMenuEntry.setPropertyValue( "ActionURL", "slot:5401" ) ;
+                xMenuEntry.setPropertyValue( "HelpURL", "5401" ) ;
 
                 // insert menu entry to sub menu
                 xSubMenuContainer.insertByIndex(0, xMenuEntry);
 
-                // intialize help/help on help
+                // intialize help / help on help
                 // entry "Help on Help"
-                xMenuEntry = UnoRuntime.queryInterface(com.sun.star.beans.XPropertySet.class, xMenuElementFactory.createInstance("com.sun.star.ui.ActionTrigger"));
-                xMenuEntry.setPropertyValue("Text", "Help on Help");
-                xMenuEntry.setPropertyValue("CommandURL", "slot:5400");
-                xMenuEntry.setPropertyValue("HelpURL", "5400");
+                xMenuEntry = UnoRuntime.queryInterface( com.sun.star.beans.XPropertySet.class, xMenuElementFactory.createInstance( "com.sun.star.ui.ActionTrigger" ) );
+                xMenuEntry.setPropertyValue( "Text", "Help on Help" );
+                xMenuEntry.setPropertyValue( "ActionURL", "slot:5400" );
+                xMenuEntry.setPropertyValue( "HelpURL", "5400" );
 
                 // insert menu entry to sub menu
                 xSubMenuContainer.insertByIndex(1, xMenuEntry);
                 // intialize help/tips
                 // entry "Tips"
-                xMenuEntry = UnoRuntime.queryInterface(com.sun.star.beans.XPropertySet.class, xMenuElementFactory.createInstance("com.sun.star.ui.ActionTrigger"));
-                xMenuEntry.setPropertyValue("Text", "Tips");
-                xMenuEntry.setPropertyValue("CommandURL", "slot:5404");
-                xMenuEntry.setPropertyValue("HelpURL", "5404");
+                xMenuEntry = UnoRuntime.queryInterface( com.sun.star.beans.XPropertySet.class,
+                                                        xMenuElementFactory.createInstance( "com.sun.star.ui.ActionTrigger" ) );
+                xMenuEntry.setPropertyValue( "Text", "Tips" );
+                xMenuEntry.setPropertyValue( "ActionURL", "slot:5404" );
+                xMenuEntry.setPropertyValue( "HelpURL", "5404" );
 
                 // insert menu entry to sub menu
                 xSubMenuContainer.insertByIndex(2, xMenuEntry);

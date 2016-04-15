@@ -55,9 +55,9 @@ public:
     virtual css::uno::Sequence< OUString > SAL_CALL getAvailableServiceNames() throw (css::uno::RuntimeException, std::exception) override;
 
     // XUIControllerRegistration
-    virtual sal_Bool SAL_CALL hasController( const OUString& aCommandURL, const OUString& aModuleName ) throw (css::uno::RuntimeException, std::exception) override;
-    virtual void SAL_CALL registerController( const OUString& aCommandURL, const OUString& aModuleName, const OUString& aControllerImplementationName ) throw (css::uno::RuntimeException, std::exception) override;
-    virtual void SAL_CALL deregisterController( const OUString& aCommandURL, const OUString& aModuleName ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL hasController( const OUString& aActionURL, const OUString& aModuleName ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL registerController( const OUString& aActionURL, const OUString& aModuleName, const OUString& aControllerImplementationName ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL deregisterController( const OUString& aActionURL, const OUString& aModuleName ) throw (css::uno::RuntimeException, std::exception) override;
 
 protected:
     UIControllerFactory( const css::uno::Reference< css::uno::XComponentContext >& xContext, const rtl::OUString &rUINode  );
@@ -146,7 +146,7 @@ throw (Exception, RuntimeException, std::exception)
 
     // Append the command URL to the Arguments sequence so that one controller can be
     // used for more than one command URL.
-    aPropValue.Name     = "CommandURL";
+    aPropValue.Name     = "ActionURL";
     aPropValue.Value  <<= ServiceSpecifier;
     aNewArgs[nAppendIndex] <<= aPropValue;
 
@@ -186,7 +186,7 @@ throw (RuntimeException, std::exception)
 
 // XUIControllerRegistration
 sal_Bool SAL_CALL UIControllerFactory::hasController(
-    const OUString& aCommandURL,
+    const OUString& aActionURL,
     const OUString& aModuleName )
 throw (css::uno::RuntimeException, std::exception)
 {
@@ -198,11 +198,11 @@ throw (css::uno::RuntimeException, std::exception)
         m_pConfigAccess->readConfigurationData();
     }
 
-    return ( !m_pConfigAccess->getServiceFromCommandModule( aCommandURL, aModuleName ).isEmpty() );
+    return ( !m_pConfigAccess->getServiceFromCommandModule( aActionURL, aModuleName ).isEmpty() );
 }
 
 void SAL_CALL UIControllerFactory::registerController(
-    const OUString& aCommandURL,
+    const OUString& aActionURL,
     const OUString& aModuleName,
     const OUString& aControllerImplementationName )
 throw (RuntimeException, std::exception)
@@ -216,12 +216,12 @@ throw (RuntimeException, std::exception)
         m_pConfigAccess->readConfigurationData();
     }
 
-    m_pConfigAccess->addServiceToCommandModule( aCommandURL, aModuleName, aControllerImplementationName );
+    m_pConfigAccess->addServiceToCommandModule( aActionURL, aModuleName, aControllerImplementationName );
     // SAFE
 }
 
 void SAL_CALL UIControllerFactory::deregisterController(
-    const OUString& aCommandURL,
+    const OUString& aActionURL,
     const OUString& aModuleName )
 throw (RuntimeException, std::exception)
 {
@@ -234,7 +234,7 @@ throw (RuntimeException, std::exception)
         m_pConfigAccess->readConfigurationData();
     }
 
-    m_pConfigAccess->removeServiceFromCommandModule( aCommandURL, aModuleName );
+    m_pConfigAccess->removeServiceFromCommandModule( aActionURL, aModuleName );
     // SAFE
 }
 

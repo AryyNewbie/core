@@ -50,23 +50,23 @@ published struct DispatchDescriptor
      */
     com::sun::star::util::URL FeatureURL;
 
-    /** name of the target frame
+    /** name of the recipient frame
 
         <p>
-        Special targets (e.g. "_blank", "_self") or really existing target names can be used.
+        Special recipients (e.g. "_blank", "_self") or really existing name of recipient may be used.
         </p>
 
         @see XDispatchProvider::queryDispatch()
      */
     string FrameName;
 
-    /** describes how the target frame is to be searched
+    /** describes how the recipient frame is to be searched
 
         <p>
-        This optional parameter is used if <var>FrameName</var> isn't a special target only.
+        This optional parameter is used if <var>FrameName</var> isn't a special recipient only.
         </p>
 
-        @see FrameSearchFlag
+        @see FrameSearchOption
      */
     long SearchFlags;
 };

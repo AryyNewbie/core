@@ -26,9 +26,9 @@
 namespace framework{
 
 InterceptionHelper::InterceptionHelper(const css::uno::Reference< css::frame::XFrame >&            xOwner,
-                                       const css::uno::Reference< css::frame::XDispatchProvider >& xSlave)
-    : m_xOwnerWeak  (xOwner                       )
-    , m_xSlave      (xSlave                       )
+                                       const css::uno::Reference< css::frame::XDispatchProvider >& xServant )
+    : m_xOwnerWeak  ( xOwner )
+    , m_xServant    ( xServant )
 {
 }
 
@@ -37,8 +37,8 @@ InterceptionHelper::~InterceptionHelper()
 }
 
 css::uno::Reference< css::frame::XDispatch > SAL_CALL InterceptionHelper::queryDispatch(const css::util::URL&  aURL            ,
-                                                                                        const OUString& sTargetFrameName,
-                                                                                              sal_Int32        nSearchFlags    )
+                                                                                        const OUString& sRecipientFrameName,
+                                                                                              sal_Int32        nSearchOptions    )
     throw(css::uno::RuntimeException, std::exception)
 {
     // SAFE {
@@ -69,18 +69,18 @@ css::uno::Reference< css::frame::XDispatch > SAL_CALL InterceptionHelper::queryD
         // registered for this command url (we already searched for matching
         // patterns above)
     }
-    // c) No registered interceptor => use our direct slave.
+    // c) No registered interceptor then use direct servant
     //    This helper exist by design and must be valid everytimes ...
     //    But to be more feature proof - we should check that .-)
-    if (!xInterceptor.is() && m_xSlave.is())
-        xInterceptor = m_xSlave;
+    if (!xInterceptor.is() && m_xServant.is())
+        xInterceptor = m_xServant;
 
     aReadLock.clear();
     // } SAFE
 
     css::uno::Reference< css::frame::XDispatch > xReturn;
     if (xInterceptor.is())
-        xReturn = xInterceptor->queryDispatch(aURL, sTargetFrameName, nSearchFlags);
+        xReturn = xInterceptor->queryDispatch(aURL, sRecipientFrameName, nSearchOptions);
     return xReturn;
 }
 
@@ -92,8 +92,8 @@ css::uno::Sequence< css::uno::Reference< css::frame::XDispatch > > SAL_CALL Inte
           css::uno::Reference< css::frame::XDispatch >*                      pDispatches = lDispatches.getArray();
     const css::frame::DispatchDescriptor*                                    pDescriptor = lDescriptor.getConstArray();
 
-    for (sal_Int32 i=0; i<c; ++i)
-        pDispatches[i] = queryDispatch(pDescriptor[i].FeatureURL, pDescriptor[i].FrameName, pDescriptor[i].SearchFlags);
+    for ( sal_Int32 i = 0; i < c; ++i )
+        pDispatches[i] = queryDispatch( pDescriptor[i].FeatureURL, pDescriptor[i].FrameName, pDescriptor[i].SearchFlags );
 
     return lDispatches;
 }
@@ -125,28 +125,28 @@ void SAL_CALL InterceptionHelper::registerDispatchProviderInterceptor(const css:
     SolarMutexClearableGuard aWriteLock;
 
     // a) no interceptor at all - set this instance as master for given interceptor
-    //    and set our slave as its slave - and put this interceptor to the list.
+    //    and set the servant as its one - and put this interceptor to the list.
     //    Its place there doesn't matter. Because this list is currently empty.
     if (m_lInterceptionRegs.empty())
     {
-        xInterceptor->setMasterDispatchProvider(xThis   );
-        xInterceptor->setSlaveDispatchProvider (m_xSlave);
+        xInterceptor->setMasterDispatchProvider( xThis );
+        xInterceptor->setSlaveDispatchProvider( m_xServant );
         m_lInterceptionRegs.push_back(aInfo);
     }
 
     // b) OK - there is at least one interceptor already registered.
-    //    It's slave and it's master must be valid references ...
-    //    because we created it.
+    //    Its servant and its master are valid references ...
+    //    because I created it.
 
     // insert it before any other existing interceptor - means at the beginning of our list.
     else
     {
-        css::uno::Reference< css::frame::XDispatchProvider >            xSlaveD = m_lInterceptionRegs.begin()->xInterceptor;
-        css::uno::Reference< css::frame::XDispatchProviderInterceptor > xSlaveI (xSlaveD , css::uno::UNO_QUERY);
+        css::uno::Reference< css::frame::XDispatchProvider >            xServantD = m_lInterceptionRegs.begin()->xInterceptor;
+        css::uno::Reference< css::frame::XDispatchProviderInterceptor > xServantI ( xServantD , css::uno::UNO_QUERY );
 
-        xInterceptor->setMasterDispatchProvider(xThis             );
-        xInterceptor->setSlaveDispatchProvider (xSlaveD           );
-        xSlaveI->setMasterDispatchProvider     (aInfo.xInterceptor);
+        xInterceptor->setMasterDispatchProvider( xThis );
+        xInterceptor->setSlaveDispatchProvider( xServantD );
+        xServantI->setMasterDispatchProvider( aInfo.xInterceptor );
 
         m_lInterceptionRegs.push_front(aInfo);
     }
@@ -175,22 +175,22 @@ void SAL_CALL InterceptionHelper::releaseDispatchProviderInterceptor(const css::
 
     // search this interceptor ...
     // If it could be located inside cache -
-    // use its slave/master relations to update the interception list;
-    // set empty references for it as new master and slave;
+    // use its servant & master relations to update the interception list;
+    // set empty references for it as new master and servant;
     // and release it from out cache.
     InterceptorList::iterator pIt = m_lInterceptionRegs.findByReference(xInterceptor);
     if (pIt != m_lInterceptionRegs.end())
     {
-        css::uno::Reference< css::frame::XDispatchProvider >            xSlaveD  (xInterceptor->getSlaveDispatchProvider() , css::uno::UNO_QUERY);
-        css::uno::Reference< css::frame::XDispatchProvider >            xMasterD (xInterceptor->getMasterDispatchProvider(), css::uno::UNO_QUERY);
-        css::uno::Reference< css::frame::XDispatchProviderInterceptor > xSlaveI  (xSlaveD                                  , css::uno::UNO_QUERY);
-        css::uno::Reference< css::frame::XDispatchProviderInterceptor > xMasterI (xMasterD                                 , css::uno::UNO_QUERY);
+        css::uno::Reference< css::frame::XDispatchProvider >            xServantD ( xInterceptor->getSlaveDispatchProvider() , css::uno::UNO_QUERY );
+        css::uno::Reference< css::frame::XDispatchProvider >            xMasterD  ( xInterceptor->getMasterDispatchProvider(), css::uno::UNO_QUERY );
+        css::uno::Reference< css::frame::XDispatchProviderInterceptor > xServantI ( xServantD, css::uno::UNO_QUERY );
+        css::uno::Reference< css::frame::XDispatchProviderInterceptor > xMasterI  ( xMasterD, css::uno::UNO_QUERY );
 
-        if (xMasterI.is())
-            xMasterI->setSlaveDispatchProvider(xSlaveD);
+        if ( xMasterI.is() )
+            xMasterI->setSlaveDispatchProvider( xServantD );
 
-        if (xSlaveI.is())
-            xSlaveI->setMasterDispatchProvider(xMasterD);
+        if ( xServantI.is() )
+            xServantI->setMasterDispatchProvider( xMasterD ) ;
 
         xInterceptor->setSlaveDispatchProvider (css::uno::Reference< css::frame::XDispatchProvider >());
         xInterceptor->setMasterDispatchProvider(css::uno::Reference< css::frame::XDispatchProvider >());

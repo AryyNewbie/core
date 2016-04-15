@@ -48,15 +48,15 @@ class FWE_DLLPUBLIC AddonPopupMenu : public AddonMenu
     public:
         virtual ~AddonPopupMenu() override;
 
-        // Check if command URL string has the unique prefix to identify addon popup menus
-        static bool        IsCommandURLPrefix( const OUString& aCmdURL );
+        // Check if URL has the unique prefix
+        static bool        IsActionURLPrefix( const OUString& aURL );
 
-        void               SetCommandURL( const OUString& aCmdURL ) { m_aCommandURL = aCmdURL; }
+        void               SetActionURL( const OUString& aURL ) {  m_aActionURL = aURL;  }
 
     private:
         AddonPopupMenu();
 
-        OUString               m_aCommandURL;
+        OUString               m_aActionURL;
 
     friend class AddonMenuManager;
     friend class ::VclPtr<AddonPopupMenu>;

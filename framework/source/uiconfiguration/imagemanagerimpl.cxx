@@ -172,16 +172,16 @@ void CmdImageList::initialize()
 }
 
 
-Image CmdImageList::getImageFromCommandURL(vcl::ImageType nImageType, const OUString& rCommandURL)
+Image CmdImageList::getImageFromActionURL(vcl::ImageType nImageType, const OUString& rActionURL)
 {
     initialize();
-    return m_aResolver.getImageFromCommandURL(nImageType, rCommandURL);
+    return m_aResolver.getImageFromCommandURL( nImageType, rActionURL );
 }
 
-bool CmdImageList::hasImage(vcl::ImageType /*nImageType*/, const OUString& rCommandURL)
+bool CmdImageList::hasImage(vcl::ImageType /*nImageType*/, const OUString& rActionURL)
 {
     initialize();
-    return m_aResolver.hasImage(rCommandURL);
+    return m_aResolver.hasImage( rActionURL );
 }
 
 std::vector<OUString>& CmdImageList::getImageCommandNames()
@@ -201,16 +201,16 @@ GlobalImageList::~GlobalImageList()
     pGlobalImageList = nullptr;
 }
 
-Image GlobalImageList::getImageFromCommandURL( vcl::ImageType nImageType, const OUString& rCommandURL )
+Image GlobalImageList::getImageFromActionURL( vcl::ImageType nImageType, const OUString& rActionURL )
 {
     osl::MutexGuard guard( getGlobalImageListMutex() );
-    return CmdImageList::getImageFromCommandURL( nImageType, rCommandURL );
+    return CmdImageList::getImageFromActionURL( nImageType, rActionURL );
 }
 
-bool GlobalImageList::hasImage( vcl::ImageType nImageType, const OUString& rCommandURL )
+bool GlobalImageList::hasImage( vcl::ImageType nImageType, const OUString& rActionURL )
 {
     osl::MutexGuard guard( getGlobalImageListMutex() );
-    return CmdImageList::hasImage( nImageType, rCommandURL );
+    return CmdImageList::hasImage( nImageType, rActionURL );
 }
 
 ::std::vector< OUString >& GlobalImageList::getImageCommandNames()
@@ -333,7 +333,7 @@ bool ImageManagerImpl::implts_loadUserImages(
                 for ( sal_Int32 i=0; i < nCount; i++ )
                 {
                     const ImageItemDescriptor* pItem = (*pList->pImageItemList)[i].get();
-                    aUserImagesVector.push_back( pItem->aCommandURL );
+                    aUserImagesVector.push_back( pItem->aActionURL );
                 }
 
                 uno::Reference< XStream > xBitmapStream = xUserBitmapsStorage->openStreamElement(
@@ -405,7 +405,7 @@ bool ImageManagerImpl::implts_storeUserImages(
             {
                 ImageItemDescriptor* pItem = new ImageItemDescriptor;
                 pItem->nIndex = i;
-                pItem->aCommandURL = pImageList->GetImageName( i );
+                pItem->aActionURL = pImageList->GetImageName( i );
                 pList->pImageItemList->push_back( std::unique_ptr<ImageItemDescriptor>(pItem) );
             }
 
@@ -683,7 +683,7 @@ throw (css::uno::RuntimeException)
     return comphelper::mapKeysToSequence( aImageCmdNameMap );
 }
 
-bool ImageManagerImpl::hasImage( ::sal_Int16 nImageType, const OUString& aCommandURL )
+bool ImageManagerImpl::hasImage( ::sal_Int16 nImageType, const OUString& aActionURL )
 throw (css::lang::IllegalArgumentException, css::uno::RuntimeException)
 {
     SolarMutexGuard g;
@@ -696,18 +696,18 @@ throw (css::lang::IllegalArgumentException, css::uno::RuntimeException)
         throw IllegalArgumentException();
 
     vcl::ImageType nIndex = implts_convertImageTypeToIndex( nImageType );
-    if ( m_bUseGlobal && implts_getGlobalImageList()->hasImage( nIndex, aCommandURL ))
+    if ( m_bUseGlobal && implts_getGlobalImageList()->hasImage( nIndex, aActionURL ))
         return true;
     else
     {
-        if ( m_bUseGlobal && implts_getDefaultImageList()->hasImage( nIndex, aCommandURL ))
+        if ( m_bUseGlobal && implts_getDefaultImageList()->hasImage( nIndex, aActionURL ))
             return true;
         else
         {
             // User layer
             ImageList* pImageList = implts_getUserImageList(nIndex);
             if ( pImageList )
-                return ( pImageList->GetImagePos( aCommandURL ) != IMAGELIST_IMAGE_NOTFOUND );
+                return ( pImageList->GetImagePos( aActionURL ) != IMAGELIST_IMAGE_NOTFOUND );
         }
     }
 
@@ -716,7 +716,7 @@ throw (css::lang::IllegalArgumentException, css::uno::RuntimeException)
 
 Sequence< uno::Reference< XGraphic > > ImageManagerImpl::getImages(
     ::sal_Int16 nImageType,
-    const Sequence< OUString >& aCommandURLSequence )
+    const Sequence< OUString >& aActionURLSequence )
 throw ( css::lang::IllegalArgumentException, css::uno::RuntimeException )
 {
     SolarMutexGuard g;
@@ -728,9 +728,9 @@ throw ( css::lang::IllegalArgumentException, css::uno::RuntimeException )
     if (( nImageType < 0 ) || ( nImageType > MAX_IMAGETYPE_VALUE ))
         throw IllegalArgumentException();
 
-    Sequence< uno::Reference< XGraphic > > aGraphSeq( aCommandURLSequence.getLength() );
+    Sequence< uno::Reference< XGraphic > > aGraphSeq( aActionURLSequence.getLength() );
 
-    const OUString* aStrArray = aCommandURLSequence.getConstArray();
+    const OUString* aStrArray = aActionURLSequence.getConstArray();
 
     vcl::ImageType                    nIndex            = implts_convertImageTypeToIndex( nImageType );
     rtl::Reference< GlobalImageList > rGlobalImageList;
@@ -746,14 +746,14 @@ throw ( css::lang::IllegalArgumentException, css::uno::RuntimeException )
     // 1. user image list (read/write)
     // 2. module image list (read)
     // 3. global image list (read)
-    for ( sal_Int32 n = 0; n < aCommandURLSequence.getLength(); n++ )
+    for ( sal_Int32 n = 0; n < aActionURLSequence.getLength(); n++ )
     {
         Image aImage = pUserImageList->GetImage( aStrArray[n] );
         if ( !aImage && m_bUseGlobal )
         {
-            aImage = pDefaultImageList->getImageFromCommandURL( nIndex, aStrArray[n] );
+            aImage = pDefaultImageList->getImageFromActionURL( nIndex, aStrArray[n] );
             if ( !aImage )
-                aImage = rGlobalImageList->getImageFromCommandURL( nIndex, aStrArray[n] );
+                aImage = rGlobalImageList->getImageFromActionURL( nIndex, aStrArray[n] );
         }
 
         aGraphSeq[n] = aImage.GetXGraphic();
@@ -764,7 +764,7 @@ throw ( css::lang::IllegalArgumentException, css::uno::RuntimeException )
 
 void ImageManagerImpl::replaceImages(
     ::sal_Int16 nImageType,
-    const Sequence< OUString >& aCommandURLSequence,
+    const Sequence< OUString >& aActionURLSequence,
     const Sequence< uno::Reference< XGraphic > >& aGraphicsSequence )
 throw (css::lang::IllegalArgumentException,
        css::lang::IllegalAccessException,
@@ -781,7 +781,7 @@ throw (css::lang::IllegalArgumentException,
         if ( m_bDisposed )
             throw DisposedException();
 
-        if (( aCommandURLSequence.getLength() != aGraphicsSequence.getLength() ) ||
+        if (( aActionURLSequence.getLength() != aGraphicsSequence.getLength() ) ||
             (( nImageType < 0 ) || ( nImageType > MAX_IMAGETYPE_VALUE )))
             throw IllegalArgumentException();
 
@@ -792,26 +792,26 @@ throw (css::lang::IllegalArgumentException,
         ImageList* pImageList = implts_getUserImageList(nIndex);
 
         uno::Reference< XGraphic > xGraphic;
-        for ( sal_Int32 i = 0; i < aCommandURLSequence.getLength(); i++ )
+        for ( sal_Int32 i = 0; i < aActionURLSequence.getLength(); i++ )
         {
             // Check size and scale. If we don't have any graphics ignore it
             if ( !implts_checkAndScaleGraphic( xGraphic, aGraphicsSequence[i], nIndex ))
                 continue;
 
-            sal_uInt16 nPos = pImageList->GetImagePos( aCommandURLSequence[i] );
+            sal_uInt16 nPos = pImageList->GetImagePos( aActionURLSequence[i] );
             if ( nPos == IMAGELIST_IMAGE_NOTFOUND )
             {
-                pImageList->AddImage(aCommandURLSequence[i], Image(xGraphic));
+                pImageList->AddImage( aActionURLSequence[i], Image(xGraphic) );
                 if ( !pInsertedImages )
                     pInsertedImages = new CmdToXGraphicNameAccess();
-                pInsertedImages->addElement( aCommandURLSequence[i], xGraphic );
+                pInsertedImages->addElement( aActionURLSequence[i], xGraphic );
             }
             else
             {
-                pImageList->ReplaceImage(aCommandURLSequence[i], Image(xGraphic));
+                pImageList->ReplaceImage( aActionURLSequence[i], Image(xGraphic) );
                 if ( !pReplacedImages )
                     pReplacedImages = new CmdToXGraphicNameAccess();
-                pReplacedImages->addElement( aCommandURLSequence[i], xGraphic );
+                pReplacedImages->addElement( aActionURLSequence[i], xGraphic );
             }
         }
 
@@ -849,7 +849,7 @@ throw (css::lang::IllegalArgumentException,
     }
 }
 
-void ImageManagerImpl::removeImages( ::sal_Int16 nImageType, const Sequence< OUString >& aCommandURLSequence )
+void ImageManagerImpl::removeImages( ::sal_Int16 nImageType, const Sequence< OUString >& aActionURLSequence )
 throw ( css::lang::IllegalArgumentException,
         css::lang::IllegalAccessException,
         css::uno::RuntimeException)
@@ -881,9 +881,9 @@ throw ( css::lang::IllegalArgumentException,
         ImageList*                        pImageList        = implts_getUserImageList(nIndex);
         uno::Reference< XGraphic >        xEmptyGraphic( Image().GetXGraphic() );
 
-        for ( sal_Int32 i = 0; i < aCommandURLSequence.getLength(); i++ )
+        for ( sal_Int32 i = 0; i < aActionURLSequence.getLength(); i++ )
         {
-            sal_uInt16 nPos = pImageList->GetImagePos( aCommandURLSequence[i] );
+            sal_uInt16 nPos = pImageList->GetImagePos( aActionURLSequence[i] );
             if ( nPos != IMAGELIST_IMAGE_NOTFOUND )
             {
                 Image aImage = pImageList->GetImage( nPos );
@@ -894,27 +894,27 @@ throw ( css::lang::IllegalArgumentException,
                 {
                     // Check, if we have a image in our module/global image list. If we find one =>
                     // this is a replace instead of a remove operation!
-                    Image aNewImage = pDefaultImageList->getImageFromCommandURL( nIndex, aCommandURLSequence[i] );
+                    Image aNewImage = pDefaultImageList->getImageFromActionURL( nIndex, aActionURLSequence[i] );
                     if ( !aNewImage )
-                        aNewImage = rGlobalImageList->getImageFromCommandURL( nIndex, aCommandURLSequence[i] );
+                        aNewImage = rGlobalImageList->getImageFromActionURL( nIndex, aActionURLSequence[i] );
                     if ( !aNewImage )
                     {
                         if ( !pRemovedImages )
                             pRemovedImages = new CmdToXGraphicNameAccess();
-                        pRemovedImages->addElement( aCommandURLSequence[i], xEmptyGraphic );
+                        pRemovedImages->addElement( aActionURLSequence[i], xEmptyGraphic );
                     }
                     else
                     {
                         if ( !pReplacedImages )
                             pReplacedImages = new CmdToXGraphicNameAccess();
-                        pReplacedImages->addElement( aCommandURLSequence[i], aNewImage.GetXGraphic() );
+                        pReplacedImages->addElement( aActionURLSequence[i], aNewImage.GetXGraphic() );
                     }
                 } // if ( m_bUseGlobal )
                 else
                 {
                     if ( !pRemovedImages )
                         pRemovedImages = new CmdToXGraphicNameAccess();
-                    pRemovedImages->addElement( aCommandURLSequence[i], xEmptyGraphic );
+                    pRemovedImages->addElement( aActionURLSequence[i], xEmptyGraphic );
                 }
             }
         }
@@ -953,13 +953,13 @@ throw ( css::lang::IllegalArgumentException,
     }
 }
 
-void ImageManagerImpl::insertImages( ::sal_Int16 nImageType, const Sequence< OUString >& aCommandURLSequence, const Sequence< uno::Reference< XGraphic > >& aGraphicSequence )
+void ImageManagerImpl::insertImages( ::sal_Int16 nImageType, const Sequence< OUString >& aActionURLSequence, const Sequence< uno::Reference< XGraphic > >& aGraphicSequence )
 throw ( css::container::ElementExistException,
         css::lang::IllegalArgumentException,
         css::lang::IllegalAccessException,
         css::uno::RuntimeException)
 {
-    replaceImages(nImageType,aCommandURLSequence,aGraphicSequence);
+    replaceImages( nImageType, aActionURLSequence, aGraphicSequence );
 }
 
 // XUIConfigurationPersistence
@@ -1040,9 +1040,9 @@ void ImageManagerImpl::reload()
                     {
                         if ( m_bUseGlobal )
                         {
-                            Image aImage = pDefaultImageList->getImageFromCommandURL( i, pIter->first );
+                            Image aImage = pDefaultImageList->getImageFromActionURL( i, pIter->first );
                             if ( !aImage )
-                                aImage = rGlobalImageList->getImageFromCommandURL( i, pIter->first );
+                                aImage = rGlobalImageList->getImageFromActionURL( i, pIter->first );
 
                             if ( !aImage )
                             {

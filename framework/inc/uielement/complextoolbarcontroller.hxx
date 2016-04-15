@@ -59,10 +59,10 @@ class ComplexToolbarController : public svt::ToolboxController
         DECL_STATIC_LINK( ComplexToolbarController, ExecuteHdl_Impl, void*, void );
         DECL_STATIC_LINK( ComplexToolbarController, Notify_Impl, void*, void);
 
-        struct ExecuteInfo
+        struct GoInfo
         {
             css::uno::Reference< css::frame::XDispatch >     xDispatch;
-            css::util::URL                                   aTargetURL;
+            css::util::URL                                   aRecipientURL;
             css::uno::Sequence< css::beans::PropertyValue >  aArgs;
         };
 

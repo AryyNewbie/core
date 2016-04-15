@@ -307,7 +307,7 @@ NewMenuController::NewMenuController( const css::uno::Reference< css::uno::XComp
     m_bNewMenu( false ),
     m_bModuleIdentified( false ),
     m_bAcceleratorCfg( false ),
-    m_aTargetFrame( "_default" ),
+    m_aFrame( "_default" ),
     m_xContext( xContext )
 {
 }
@@ -331,10 +331,10 @@ void NewMenuController::fillPopupMenu( Reference< css::awt::XPopupMenu >& rPopup
     if ( pVCLPopupMenu )
     {
         Reference< XDispatchProvider > xDispatchProvider( m_xFrame, UNO_QUERY );
-        URL aTargetURL;
-        aTargetURL.Complete = rtl::OUString::createFromAscii(m_bNewMenu ? aSlotNewDocDirect : aSlotAutoPilot);
-        m_xURLTransformer->parseStrict( aTargetURL );
-        Reference< XDispatch > xMenuItemDispatch = xDispatchProvider->queryDispatch( aTargetURL, OUString(), 0 );
+        URL theURL;
+        theURL.Complete = rtl::OUString::createFromAscii(m_bNewMenu ? aSlotNewDocDirect : aSlotAutoPilot);
+        m_xURLTransformer->parseStrict( theURL );
+        Reference< XDispatch > xMenuItemDispatch = xDispatchProvider->queryDispatch( theURL, OUString(), 0 );
         if(xMenuItemDispatch == nullptr)
             return;
 
@@ -343,7 +343,7 @@ void NewMenuController::fillPopupMenu( Reference< css::awt::XPopupMenu >& rPopup
 
         OUString aTitle;
         OUString aURL;
-        OUString aTargetFrame;
+        OUString aRecipientFrame;
         OUString aImageId;
         sal_uInt16 nItemId = 1;
 
@@ -358,7 +358,7 @@ void NewMenuController::fillPopupMenu( Reference< css::awt::XPopupMenu >& rPopup
                 else if ( aProperty.Name == DYNAMICMENU_PROPERTYNAME_IMAGEIDENTIFIER )
                     aProperty.Value >>= aImageId;
                 else if ( aProperty.Name == DYNAMICMENU_PROPERTYNAME_TARGETNAME )
-                    aProperty.Value >>= aTargetFrame;
+                    aProperty.Value >>= aRecipientFrame;
             }
 
             if ( aTitle.isEmpty() && aURL.isEmpty() )
@@ -371,7 +371,7 @@ void NewMenuController::fillPopupMenu( Reference< css::awt::XPopupMenu >& rPopup
                 pVCLPopupMenu->InsertItem( nItemId, aTitle );
                 pVCLPopupMenu->SetItemCommand( nItemId, aURL );
 
-                sal_uIntPtr nAttributePtr = MenuAttributes::CreateAttribute( aTargetFrame, aImageId );
+                sal_uIntPtr nAttributePtr = MenuAttributes::CreateAttribute( aRecipientFrame, aImageId );
                 pVCLPopupMenu->SetUserValue( nItemId, nAttributePtr, MenuAttributes::ReleaseAttribute );
 
                 nItemId++;
@@ -419,7 +419,7 @@ void SAL_CALL NewMenuController::itemSelected( const css::awt::MenuEvent& rEvent
     xURLTransformer     = m_xURLTransformer;
     aLock.clear();
 
-    css::util::URL aTargetURL;
+    css::util::URL aURL;
     Sequence< PropertyValue > aArgsList( 1 );
 
     if ( xPopupMenu.is() && xDispatchProvider.is() )
@@ -427,24 +427,24 @@ void SAL_CALL NewMenuController::itemSelected( const css::awt::MenuEvent& rEvent
         VCLXPopupMenu* pPopupMenu = static_cast<VCLXPopupMenu *>(VCLXPopupMenu::GetImplementation( xPopupMenu ));
         if ( pPopupMenu )
         {
-            OUString aTargetFrame( m_aTargetFrame );
+            OUString aRecipientFrame( m_aFrame );
 
             {
                 SolarMutexGuard aSolarMutexGuard;
                 PopupMenu* pVCLPopupMenu = static_cast<PopupMenu *>(pPopupMenu->GetMenu());
-                aTargetURL.Complete = pVCLPopupMenu->GetItemCommand(rEvent.MenuId);
+                aURL.Complete = pVCLPopupMenu->GetItemCommand(rEvent.MenuId);
                 sal_uLong nAttributePtr = pVCLPopupMenu->GetUserValue(rEvent.MenuId);
                 MenuAttributes* pAttributes = reinterpret_cast<MenuAttributes *>(nAttributePtr);
                 if (pAttributes)
-                    aTargetFrame = pAttributes->aTargetFrame;
+                    aRecipientFrame = pAttributes->aFrame;
             }
 
-            xURLTransformer->parseStrict( aTargetURL );
+            xURLTransformer->parseStrict( aURL );
 
             aArgsList[0].Name = "Referer";
             aArgsList[0].Value = makeAny( OUString( "private:user" ));
 
-            xDispatch = xDispatchProvider->queryDispatch( aTargetURL, aTargetFrame, 0 );
+            xDispatch = xDispatchProvider->queryDispatch( aURL, aRecipientFrame, 0 );
         }
     }
 
@@ -455,7 +455,7 @@ void SAL_CALL NewMenuController::itemSelected( const css::awt::MenuEvent& rEvent
         // after select!!!
         NewDocument* pNewDocument = new NewDocument;
         pNewDocument->xDispatch  = xDispatch;
-        pNewDocument->aTargetURL = aTargetURL;
+        pNewDocument->aRecipientURL = aURL;
         pNewDocument->aArgSeq    = aArgsList;
         Application::PostUserEvent( LINK(nullptr, NewMenuController, ExecuteHdl_Impl), pNewDocument );
     }
@@ -559,7 +559,7 @@ IMPL_STATIC_LINK( NewMenuController, ExecuteHdl_Impl, void*, p, void )
         // Asynchronous execution as this can lead to our own destruction!
         // Framework can recycle our current frame and the layout manager disposes all user interface
         // elements if a component gets detached from its frame!
-        pNewDocument->xDispatch->dispatch( pNewDocument->aTargetURL, pNewDocument->aArgSeq );
+        pNewDocument->xDispatch->dispatch( pNewDocument->aRecipientURL, pNewDocument->aArgSeq );
     delete pNewDocument;
 }
 

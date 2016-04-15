@@ -41,7 +41,7 @@ namespace framework{
 /** @short      implements a helper to support interception with additional functionality.
 
     @descr      This helper implements the complete XDispatchProviderInterception interface with
-                master/slave functionality AND using of optional features like registration of URL pattern!
+                master/servant functionality AND using of optional features like registration of URL pattern!
 
     @attention  Don't use this class as direct member - use it dynamicly. Do not derive from this class.
                 We hold a weakreference to our owner not to our superclass.
@@ -136,8 +136,8 @@ class InterceptionHelper : public  ::cppu::WeakImplHelper<
         css::uno::WeakReference< css::frame::XFrame > m_xOwnerWeak;
 
         /** @short this interception helper implements the top level master of an interceptor list ...
-                   but this member is the lowest possible slave! */
-        css::uno::Reference< css::frame::XDispatchProvider > m_xSlave;
+                   but this member is the lowest possible servant */
+        css::uno::Reference< css::frame::XDispatchProvider > m_xServant;
 
         /** @short contains all registered interceptor objects. */
         InterceptorList m_lInterceptionRegs;
@@ -151,11 +151,11 @@ class InterceptionHelper : public  ::cppu::WeakImplHelper<
             @param xOwner
                     points to the frame, which use this instances to support it's own interception interfaces.
 
-            @param xSlave
-                    an outside creates dispatch provider, which has to be used here as lowest slave "interceptor".
+            @param xServant
+                    an outside created dispatch provider, which has to be used here as lowest servant "interceptor".
          */
         InterceptionHelper(const css::uno::Reference< css::frame::XFrame >&            xOwner,
-                           const css::uno::Reference< css::frame::XDispatchProvider >& xSlave);
+                           const css::uno::Reference< css::frame::XDispatchProvider >& xServant );
 
     protected:
 
@@ -177,37 +177,36 @@ class InterceptionHelper : public  ::cppu::WeakImplHelper<
 
             @descr  We search inside our list of interception registrations, to locate
                     any interested interceptor. In case no interceptor exists or nobody is
-                    interested on this URL our lowest slave will be used.
+                    interested on this URL the lowest servant will be used.
 
             @param  aURL
                         describes the requested dispatch functionality.
 
-            @param  sTargetFrameName
-                        the name of the target frame or a special name like "_blank", "_top" ...
+            @param  sRecipientFrameName
+                        the name of the recipient frame or a special name like "_blank", "_top" ...
                         Won't be used here ... but may by one of our registered interceptor objects
-                        or our slave.
+                        or the servant.
 
-            @param  nSearchFlags
-                        optional search parameter for targeting, if sTargetFrameName isn't a special one.
+            @param  nSearchOptions
+                        optional parameter to look if sRecipientFrameName is a special one
 
-            @return A valid dispatch object, if any interceptor or at least our slave is interested on the given URL;
+            @return A valid dispatch object, if any interceptor or at least the servant is interested on the given URL;
                     or NULL otherwise.
          */
-        virtual css::uno::Reference< css::frame::XDispatch > SAL_CALL queryDispatch(const css::util::URL&  aURL            ,
-                                                                                    const OUString& sTargetFrameName,
-                                                                                          sal_Int32        nSearchFlags    )
+        virtual css::uno::Reference< css::frame::XDispatch > SAL_CALL queryDispatch(const css::util::URL&  aURL,
+                                                                                    const OUString& sRecipientFrameName,
+                                                                                          sal_Int32        nSearchOptions    )
             throw(css::uno::RuntimeException, std::exception) override;
 
         // XDispatchProvider
 
         /** @short implements an optimized queryDispatch() for remote.
 
-            @descr It capsulate more than one queryDispatch() requests and return a lits of dispatch objects
-                   as result. Because both lists (in and out) correspond together, it's not allowed to
-                   pack it - means suppress NULL references!
+            @descr It capsulates more than one queryDispatch() requests and return a lits of dispatch objects.
+                   Because both lists (in and out) correspond together, it wouldn't pack them - means suppress null-references
 
             @param lDescriptor
-                    a list of queryDispatch() arguments.
+                    a list of queryDispatch() arguments
 
             @return A list of dispatch objects.
          */
@@ -219,15 +218,13 @@ class InterceptionHelper : public  ::cppu::WeakImplHelper<
         /** @short      register an interceptor.
 
             @descr      Somebody can register himself to intercept all or some special dispatches.
-                        It's depend from his supported interfaces. If he implement XInterceptorInfo
-                        he his called for some special URLs only - otherwise we call it for every request!
-
-            @attention  We don't check for double registrations here!
+                        It depends on its supported interfaces. If it implements XInterceptorInfo
+                        it is called for special URLs only and otherwise for every one
 
             @param      xInterceptor
                         reference to interceptor, which wish to be registered here.
 
-            @throw      A RuntimeException if the given reference is NULL!
+            @throw      A RuntimeException if the given reference is null
          */
         virtual void SAL_CALL registerDispatchProviderInterceptor(const css::uno::Reference< css::frame::XDispatchProviderInterceptor >& xInterceptor)
             throw(css::uno::RuntimeException, std::exception) override;

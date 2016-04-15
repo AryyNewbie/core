@@ -109,19 +109,21 @@ void SAL_CALL DispatchRecorder::startRecording( const css::uno::Reference< css::
 void SAL_CALL DispatchRecorder::recordDispatch( const css::util::URL& aURL,
                                                 const css::uno::Sequence< css::beans::PropertyValue >& lArguments ) throw( css::uno::RuntimeException, std::exception )
 {
-    OUString aTarget;
+    OUString aRecipient;
 
-    css::frame::DispatchStatement aStatement( aURL.Complete, aTarget, lArguments, 0, false );
+    css::frame::DispatchStatement aStatement( aURL.Complete, aRecipient, lArguments, 0, false );
     m_aStatements.push_back( aStatement );
 }
 
 void SAL_CALL  DispatchRecorder::recordDispatchAsComment( const css::util::URL& aURL,
                                                           const css::uno::Sequence< css::beans::PropertyValue >& lArguments ) throw( css::uno::RuntimeException, std::exception )
 {
-    OUString aTarget;
+    OUString aRecipient;
 
-    // last parameter must be set to true -> it's a comment
-    css::frame::DispatchStatement aStatement( aURL.Complete, aTarget, lArguments, 0, true );
+    // true as last parameter specifies that this statement will be recorded as commented out
+    // see XDispatchRecorder::recordDispatchAsComment()
+    css::frame::DispatchStatement aStatement( aURL.Complete, aRecipient, lArguments, 0, true );
+
     m_aStatements.push_back( aStatement );
 }
 

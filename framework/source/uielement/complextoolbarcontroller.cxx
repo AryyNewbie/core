@@ -95,8 +95,8 @@ throw ( RuntimeException, std::exception )
 {
     Reference< XDispatch >       xDispatch;
     Reference< XURLTransformer > xURLTransformer;
-    OUString                     aCommandURL;
-    css::util::URL  aTargetURL;
+    OUString                     aActionURL;
+    css::util::URL  aRecipientURL;
     Sequence<PropertyValue> aArgs;
 
     {
@@ -111,20 +111,20 @@ throw ( RuntimeException, std::exception )
         {
             xURLTransformer = m_xURLTransformer;
             xDispatch = getDispatchFromCommand( m_aCommandURL );
-            aCommandURL = m_aCommandURL;
-            aTargetURL = getInitializedURL();
+            aActionURL = m_aCommandURL;
+            aRecipientURL = getInitializedURL();
             aArgs = getExecuteArgs(KeyModifier);
         }
     }
 
-    if ( xDispatch.is() && !aTargetURL.Complete.isEmpty() )
+    if ( xDispatch.is() && !aRecipientURL.Complete.isEmpty() )
     {
         // Execute dispatch asynchronously
-        ExecuteInfo* pExecuteInfo = new ExecuteInfo;
-        pExecuteInfo->xDispatch     = xDispatch;
-        pExecuteInfo->aTargetURL    = aTargetURL;
-        pExecuteInfo->aArgs         = aArgs;
-        Application::PostUserEvent( LINK(nullptr, ComplexToolbarController , ExecuteHdl_Impl), pExecuteInfo );
+        GoInfo* pGoInfo = new GoInfo;
+        pGoInfo->xDispatch     = xDispatch;
+        pGoInfo->aRecipientURL    = aRecipientURL;
+        pGoInfo->aArgs         = aArgs;
+        Application::PostUserEvent( LINK(nullptr, ComplexToolbarController , ExecuteHdl_Impl), pGoInfo );
     }
 }
 
@@ -198,20 +198,20 @@ throw ( RuntimeException, std::exception )
 
 IMPL_STATIC_LINK( ComplexToolbarController, ExecuteHdl_Impl, void*, p, void )
 {
-   ExecuteInfo* pExecuteInfo = static_cast<ExecuteInfo*>(p);
+   GoInfo* pGoInfo = static_cast<GoInfo*>(p);
    SolarMutexReleaser aReleaser;
    try
    {
-       // Asynchronous execution as this can lead to our own destruction!
-       // Framework can recycle our current frame and the layout manager disposes all user interface
-       // elements if a component gets detached from its frame!
-       pExecuteInfo->xDispatch->dispatch( pExecuteInfo->aTargetURL, pExecuteInfo->aArgs );
+       // Asynchronous execution as this can lead to destruction of self.
+       // Framework can recycle the current frame and the layout manager disposes all user interface
+       // elements if a component gets detached from its frame
+       pGoInfo->xDispatch->dispatch( pGoInfo->aRecipientURL, pGoInfo->aArgs );
    }
    catch ( const Exception& )
    {
    }
 
-   delete pExecuteInfo;
+   delete pGoInfo;
 }
 
 IMPL_STATIC_LINK( ComplexToolbarController, Notify_Impl, void*, p, void )

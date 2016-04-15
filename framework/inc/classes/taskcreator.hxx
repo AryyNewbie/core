@@ -31,7 +31,7 @@
 namespace framework{
 
 /*
-    @short          a helper to create new tasks or sub frames for "_blank" or FrameSearchFlag::CREATE
+    @short          a helper to create new tasks or sub frames for "_blank" or FrameSearchOption::Create
     @descr          There are different places to create new (task)frames and it's not easy to service this code.
                     That's the reason for this helper. It encapsulates asynchronous/synchronous creation
                     by providing a simple interface.

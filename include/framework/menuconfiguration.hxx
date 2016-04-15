@@ -60,7 +60,7 @@ private:
 
     MenuAttributes(const OUString& rFrame, const OUString& rImageIdStr)
         : refCount(0)
-        , aTargetFrame(rFrame)
+        , aFrame(rFrame)
         , aImageId(rImageIdStr)
     {
     }
@@ -74,7 +74,7 @@ private:
     MenuAttributes(const MenuAttributes&) = delete;
 
 public:
-    OUString aTargetFrame;
+    OUString aFrame;
     OUString aImageId;
     css::uno::WeakReference<css::frame::XDispatchProvider> xDispatchProvider;
 

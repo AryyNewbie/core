@@ -320,7 +320,7 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                         {
                             case IMG_ATTRIBUTE_COMMAND:
                             {
-                                pItem->aCommandURL  = xAttribs->getValueByIndex( n );
+                                pItem->aActionURL  = xAttribs->getValueByIndex( n );
                             }
                             break;
 
@@ -348,7 +348,7 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                 }
 
                 // Check required attribute "command"
-                if ( pItem->aCommandURL.isEmpty() )
+                if ( pItem->aActionURL.isEmpty() )
                 {
                     delete m_pImages;
                     m_pImages = nullptr;
@@ -432,7 +432,7 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                         {
                             case IMG_ATTRIBUTE_COMMAND:
                             {
-                                pItem->aCommandURL  = xAttribs->getValueByIndex( n );
+                                pItem->aActionURL  = xAttribs->getValueByIndex( n );
                             }
                             break;
 
@@ -449,7 +449,7 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                 }
 
                 // Check required attribute "command"
-                if ( pItem->aCommandURL.isEmpty() )
+                if ( pItem->aActionURL.isEmpty() )
                 {
                     delete m_pImages;
                     delete m_pExternalImages;
@@ -557,7 +557,7 @@ throw(  SAXException, RuntimeException, std::exception )
 }
 
 void SAL_CALL OReadImagesDocumentHandler::processingInstruction(
-    const OUString& /*aTarget*/, const OUString& /*aData*/ )
+    const OUString& /*aRecipient*/, const OUString& /*aData*/ )
 throw(  SAXException, RuntimeException, std::exception )
 {
 }
@@ -740,7 +740,7 @@ void OWriteImagesDocumentHandler::WriteImage( const ImageItemDescriptor* pImage 
 
     pList->AddAttribute( m_aXMLImageNS + ATTRIBUTE_COMMAND,
                          m_aAttributeType,
-                         pImage->aCommandURL );
+                         pImage->aActionURL );
 
     m_xWriteDocumentHandler->startElement( ELEMENT_NS_ENTRY, xList );
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
@@ -784,11 +784,11 @@ void OWriteImagesDocumentHandler::WriteExternalImage( const ExternalImageItemDes
                              pExternalImage->aURL );
     }
 
-    if ( !pExternalImage->aCommandURL.isEmpty() )
+    if ( !pExternalImage->aActionURL.isEmpty() )
     {
         pList->AddAttribute( m_aXMLImageNS + ATTRIBUTE_COMMAND,
                              m_aAttributeType,
-                             pExternalImage->aCommandURL );
+                             pExternalImage->aActionURL );
     }
 
     m_xWriteDocumentHandler->startElement( ELEMENT_NS_EXTERNALENTRY, xList );

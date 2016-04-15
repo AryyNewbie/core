@@ -94,14 +94,13 @@ class OFrames   :   public ::cppu::WeakImplHelper< css::frame::XFrames >
         virtual void SAL_CALL remove( const css::uno::Reference< css::frame::XFrame >& xFrame ) throw( css::uno::RuntimeException, std::exception ) override;
 
         /*
-            @short      return list of all applicable frames for given flags
-            @descr      Call these to get a list of all frames, which are match with given search flags.
-            @param      "nSearchFlag", flags to search right frames.
-            @return     A list of founded frames.
+            @short      return list of all applicable frames for options given
+            @param      nSearchOptions
+            @return     list of found frames
 
             @onerror    An empty list is returned.
         */
-        virtual css::uno::Sequence< css::uno::Reference< css::frame::XFrame > > SAL_CALL queryFrames( sal_Int32 nSearchFlags ) throw( css::uno::RuntimeException, std::exception ) override;
+        virtual css::uno::Sequence< css::uno::Reference< css::frame::XFrame > > SAL_CALL queryFrames( sal_Int32 nSearchOptions ) throw( css::uno::RuntimeException, std::exception ) override;
 
         //  XIndexAccess
 
@@ -159,12 +158,6 @@ class OFrames   :   public ::cppu::WeakImplHelper< css::frame::XFrames >
 
     protected:
 
-        /*
-            @short      standard destructor
-            @descr      This method destruct an instance of this class and clear some member.
-                        This method is protected, because it's not allowed to use this class as a member!
-                        You MUST use a dynamical instance (pointer). That's the reason for a protected dtor.
-        */
         virtual ~OFrames() override;
 
         /*
@@ -174,7 +167,7 @@ class OFrames   :   public ::cppu::WeakImplHelper< css::frame::XFrames >
                         2) dispose from parent or factory ore ...<BR>
                         This method do the same for both ways! It free used memory and release references ...
 
-            @seealso    method dispose() (if it exist!)
+            @seealso    method dispose() if it exists
             @seealso    destructor ~TaskEnumeration()
         */
         void impl_resetObject();
@@ -194,19 +187,18 @@ class OFrames   :   public ::cppu::WeakImplHelper< css::frame::XFrames >
         void impl_appendSequence(           css::uno::Sequence< css::uno::Reference< css::frame::XFrame > >&    seqDestination  ,
                                      const  css::uno::Sequence< css::uno::Reference< css::frame::XFrame > >&    seqSource       );
 
-    //  debug methods
-    //  (should be private everyway!)
+    //  private debug methods
 
         /*
-            @short      debug-method to check incoming parameter of some other mehods of this class
+            @short      debug method to check incoming parameter of some other mehods of this class
             @descr      The following methods are used to check parameters for other methods
-                        of this class. The return value is used directly for an ASSERT(...).
+                        of this class. The return value is used directly for an ASSERT(...)
 
-            @seealso    ASSERTs in implementation!
+            @seealso    ASSERTs in implementation
 
-            @param      references to checking variables
-            @return     sal_False ,on invalid parameter
-            @return     sal_True  ,otherwise
+            @param      references to variables to check
+            @return     sal_False on invalid parameter
+            @return     sal_True otherwise
         */
 
     private:
@@ -216,13 +208,12 @@ class OFrames   :   public ::cppu::WeakImplHelper< css::frame::XFrames >
         static bool impldbg_checkParameter_remove       (   const   css::uno::Reference< css::frame::XFrame >&              xFrame          );
         static bool impldbg_checkParameter_queryFrames  (           sal_Int32                                               nSearchFlags    );
 
-    //  variables
-    //  (should be private everyway!)
+    //  private variables
 
     private:
-        css::uno::WeakReference< css::frame::XFrame >               m_xOwner;   /// reference to owner of this instance (Hold no hard reference!)
-        FrameContainer*                                             m_pFrameContainer;   /// with owner shared list to hold all direct children of an XFramesSupplier
-        bool                                                        m_bRecursiveSearchProtection;   /// flag to protect against recursive searches of frames at parents
+        css::uno::WeakReference< css::frame::XFrame > m_xOwner;   // reference to owner of this instance (Hold no hard reference)
+        FrameContainer* m_pFrameContainer;   // with owner shared list to hold all direct children of an XFramesSupplier
+        bool m_bRecursiveSearchLock;   // used to tune recursive searches of frames at parents
 
 };
 

@@ -57,8 +57,8 @@ class LoadEnvException
                         global desktop reference! */
             ID_INVALID_ENVIRONMENT,
 
-            /** @short  indicates a failed search for the right target frame. */
-            ID_NO_TARGET_FOUND,
+            /** @short  indicates a failed search for frame */
+            ID_NO_FRAME_FOUND,
 
             /** @short  TODO */
             ID_COULD_NOT_REACTIVATE_CONTROLLER,

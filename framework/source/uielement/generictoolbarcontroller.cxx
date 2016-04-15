@@ -127,7 +127,7 @@ throw ( RuntimeException, std::exception )
 {
     Reference< XDispatch >       xDispatch;
     Reference< XURLTransformer > xURLTransformer;
-    OUString                     aCommandURL;
+    OUString                     aActionURL;
 
     {
         SolarMutexGuard aSolarMutexGuard;
@@ -141,8 +141,8 @@ throw ( RuntimeException, std::exception )
         {
             xURLTransformer = URLTransformer::create(m_xContext);
 
-            aCommandURL = m_aCommandURL;
-            URLToDispatchMap::iterator pIter = m_aListenerMap.find( m_aCommandURL );
+            aActionURL = m_aCommandURL;
+            URLToDispatchMap::iterator pIter = m_aListenerMap.find( aActionURL );
             if ( pIter != m_aListenerMap.end() )
                 xDispatch = pIter->second;
         }
@@ -150,22 +150,22 @@ throw ( RuntimeException, std::exception )
 
     if ( xDispatch.is() && xURLTransformer.is() )
     {
-        css::util::URL aTargetURL;
+        css::util::URL aURL;
         Sequence<PropertyValue>   aArgs( 1 );
 
         // Add key modifier to argument list
         aArgs[0].Name  = "KeyModifier";
         aArgs[0].Value <<= KeyModifier;
 
-        aTargetURL.Complete = aCommandURL;
-        xURLTransformer->parseStrict( aTargetURL );
+        aURL.Complete = aActionURL;
+        xURLTransformer->parseStrict( aURL );
 
         // Execute dispatch asynchronously
-        ExecuteInfo* pExecuteInfo = new ExecuteInfo;
-        pExecuteInfo->xDispatch     = xDispatch;
-        pExecuteInfo->aTargetURL    = aTargetURL;
-        pExecuteInfo->aArgs         = aArgs;
-        Application::PostUserEvent( LINK(nullptr, GenericToolbarController , ExecuteHdl_Impl), pExecuteInfo );
+        GoInfo* pGoInfo = new GoInfo;
+        pGoInfo->xDispatch     = xDispatch;
+        pGoInfo->aRecipientURL = aURL;
+        pGoInfo->aArgs         = aArgs;
+        Application::PostUserEvent( LINK(nullptr, GenericToolbarController , ExecuteHdl_Impl), pGoInfo );
     }
 }
 
@@ -265,20 +265,20 @@ throw ( RuntimeException, std::exception )
 
 IMPL_STATIC_LINK( GenericToolbarController, ExecuteHdl_Impl, void*, p, void )
 {
-   ExecuteInfo* pExecuteInfo = static_cast<ExecuteInfo*>(p);
+   GoInfo* pGoInfo = static_cast<GoInfo*>(p);
    SolarMutexReleaser aReleaser;
    try
    {
         // Asynchronous execution as this can lead to our own destruction!
         // Framework can recycle our current frame and the layout manager disposes all user interface
         // elements if a component gets detached from its frame!
-        pExecuteInfo->xDispatch->dispatch( pExecuteInfo->aTargetURL, pExecuteInfo->aArgs );
+        pGoInfo->xDispatch->dispatch( pGoInfo->aRecipientURL, pGoInfo->aArgs );
    }
    catch ( const Exception& )
    {
    }
 
-   delete pExecuteInfo;
+   delete pGoInfo;
 }
 
 MenuToolbarController::MenuToolbarController( const Reference< XComponentContext >& rxContext,

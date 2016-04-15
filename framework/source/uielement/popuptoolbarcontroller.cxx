@@ -609,7 +609,7 @@ throw ( css::uno::RuntimeException, std::exception )
     if ( !m_aLastURL.getLength() )
         return;
 
-    OUString aTarget( "_default" );
+    OUString aRecipient( "_default" );
     if ( m_xPopupMenu.is() )
     {
         // TODO investigate how to wrap Get/SetUserValue in css::awt::XMenu
@@ -626,14 +626,14 @@ throw ( css::uno::RuntimeException, std::exception )
                 pVCLPopupMenu->GetUserValue( pVCLPopupMenu->GetCurItemId() ) );
 
         if ( pMenuAttributes )
-            aTarget = pMenuAttributes->aTargetFrame;
+            aRecipient = pMenuAttributes->aFrame;
     }
 
     css::uno::Sequence< css::beans::PropertyValue > aArgs( 1 );
     aArgs[0].Name = "Referer";
     aArgs[0].Value <<= OUString( "private:user" );
 
-    dispatchCommand( m_aLastURL, aArgs, aTarget );
+    dispatchCommand( m_aLastURL, aArgs, aRecipient );
 }
 
 void NewToolbarController::functionExecuted( const OUString &rCommand )

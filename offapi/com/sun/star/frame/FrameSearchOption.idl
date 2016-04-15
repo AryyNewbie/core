@@ -1,0 +1,92 @@
+/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+/*
+ * This file is part of the LibreOffice project.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ */
+
+#ifndef __com_sun_star_frame_FrameSearchOption_idl__
+#define __com_sun_star_frame_FrameSearchOption_idl__
+
+ module com {  module sun {  module star {  module frame {
+
+/** These constants describe the algorithm to be used to search a frame
+
+    <p>
+    These options will be used with methods XFrame::findFrame(),
+    XDispatchProvider::queryDispatch() or
+    XComponentLoader::loadComponentFromURL() if no special frame name
+    e.g. "_blank", "_self" is specified.
+    </p>
+
+    @see XFrame::findFrame()
+    @see XDispatchProvider::queryDispatch()
+    @see XComponentLoader::loadComponentFromURL()
+ */
+published constants FrameSearchOption
+{
+
+    /** allows search on the parent frames
+     */
+    const long Parent = 1 << 0;
+
+    /** include the frame himself
+     */
+    const long Self = 1 << 1;
+
+        /** include all child frames
+
+            <p>
+            Note: That means all direct children and of course her children too.
+                  Search doesn't stop at the next level inside the tree
+            </p>
+         */
+    const long Children = 1 << 2;
+
+    /** frame will be created if not found
+     */
+    const long Create = 1 << 3;
+
+        /** includes the direct siblings of the frame
+
+            <p>
+            Normally it's interpreted as search on the direct children of the parent
+            only. But in combination with e.g. the Children option it can include all
+            childrens of it too.
+            </p>
+     */
+    const long Siblings = 1 << 4;
+
+        /** allow the search outside the current sub task tree of the whole possible frame tree
+
+        <p>
+        If this option isn't present, any search from bottom to top has to stop, if a top frame
+        will be reached. It doesn't influence a search from top to bottom.
+        But it can be used at the root of the frame tree to search on direct children of it only.
+        Because the direct children of the root node are the root's of the task sub trees, which
+        are top frames too. Instead of using the Children option there, it's possible to suppress
+        a deeper search.
+        </p>
+     */
+    const long Tasks = 1 << 5;
+
+        /** includes all frames except frames in other tasks sub trees
+            but doesn't create any new frame
+        */
+    const long All = Parent | Self | Children | Siblings;
+
+    /** searches in the whole hierarchy of frames but doesn't create any new frame
+     */
+    const long Global = All | Tasks;
+
+    const long FullMask = Tasks | Siblings | Create | Children | Self | Parent ;
+};
+
+}; }; }; };
+
+#endif
+
+/* vim:set shiftwidth=4 softtabstop=4 expandtab: */
