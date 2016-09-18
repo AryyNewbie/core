@@ -211,6 +211,8 @@ static const VarNameAttribute aVarNameAttribute[] =
 
 const OUString& SvtPathOptions_Impl::GetPath( SvtPathOptions::Paths ePath )
 {
+fprintf( stderr, "const OUString& SvtPathOptions_Impl::GetPath( SvtPathOptions::Paths ePath )\n" );
+
     if ( ePath >= SvtPathOptions::PATH_COUNT )
         return m_aEmptyString;
 
@@ -384,12 +386,18 @@ SvtPathOptions_Impl::SvtPathOptions_Impl() :
     m_aLanguageTag( LANGUAGE_DONTKNOW )
 {
     Reference< XComponentContext > xContext = comphelper::getProcessComponentContext();
+fprintf( stderr, "xContext okay @ SvtPathOptions_Impl::SvtPathOptions_Impl()\n" );
 
     // Create necessary services
     Reference< XPathSettings > xPathSettings = thePathSettings::get(xContext);
+fprintf( stderr, "xPathSettings okay @ SvtPathOptions_Impl::SvtPathOptions_Impl()\n" );
+
     m_xPathSettings.set( xPathSettings, UNO_QUERY_THROW );
+fprintf( stderr, "m_xPathSettings okay @ SvtPathOptions_Impl::SvtPathOptions_Impl()\n" );
     m_xSubstVariables.set( PathSubstitution::create(xContext) );
+fprintf( stderr, "m_xSubstVariables okay @ SvtPathOptions_Impl::SvtPathOptions_Impl()\n" );
     m_xMacroExpander = theMacroExpander::get(xContext);
+fprintf( stderr, "m_xMacroExpander okay @ SvtPathOptions_Impl::SvtPathOptions_Impl()\n" );
 
     // Create temporary hash map to have a mapping between property names and property handles
     Reference< XPropertySetInfo > xPropSetInfo = xPathSettings->getPropertySetInfo();
@@ -418,15 +426,17 @@ SvtPathOptions_Impl::SvtPathOptions_Impl() :
         }
     }
 
-    // Create hash map for path variables that need a system path as a return value!
+    // Create hash map for path variables that need a system path as a return value
     nCount = sizeof( aVarNameAttribute ) / sizeof( VarNameAttribute );
     for ( i = 0; i < nCount; i++ )
     {
         m_aSystemPathVarNames.insert( OUString::createFromAscii( aVarNameAttribute[i].pVarName ) );
     }
 
-    // Set language type!
+    // Set language type
     m_aLanguageTag.reset( ConfigManager::getLocale() );
+
+fprintf( stderr, "exit from constructor SvtPathOptions_Impl::SvtPathOptions_Impl()\n" );
 }
 
 // class SvtPathOptions --------------------------------------------------
@@ -435,14 +445,19 @@ namespace { struct lclMutex : public rtl::Static< ::osl::Mutex, lclMutex > {}; }
 
 SvtPathOptions::SvtPathOptions()
 {
+fprintf( stderr, "constructor SvtPathOptions::SvtPathOptions()\n" );
+
     // Global access, must be guarded (multithreading)
     ::osl::MutexGuard aGuard( lclMutex::get() );
     pImpl = g_pOptions.lock();
     if ( !pImpl )
     {
-        pImpl = std::make_shared<SvtPathOptions_Impl>();
+fprintf( stderr, "( !pImpl ) @ SvtPathOptions::SvtPathOptions()\n" );
+        pImpl = std::make_shared< SvtPathOptions_Impl >();
+fprintf( stderr, "( !pImpl ) @ SvtPathOptions::SvtPathOptions() ~ make shared okay\n" );
         g_pOptions = pImpl;
         ItemHolder1::holdConfigItem(E_PATHOPTIONS);
+fprintf( stderr, "( !pImpl ) @ SvtPathOptions::SvtPathOptions() ~ holdConfigItem okay\n" );
     }
 }
 
@@ -486,6 +501,8 @@ const OUString& SvtPathOptions::GetBitmapPath() const
 
 const OUString& SvtPathOptions::GetConfigPath() const
 {
+fprintf( stderr, "const OUString& SvtPathOptions::GetConfigPath() const\n" );
+
     return pImpl->GetConfigPath();
 }
 
