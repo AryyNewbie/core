@@ -129,7 +129,7 @@ $(eval $(call gb_Rdb_add_components,services,\
 			$(call gb_Helper_optional,AVMEDIA,avmedia/source/macavf/avmediaMacAVF) \
 		) \
 		$(if $(filter TRUE,$(ENABLE_MACOSX_SANDBOX)),, \
-			$(if $(filter 1080 1090 101000 101100,$(MACOSX_SDK_VERSION)), \
+			$(if $(shell test $(MACOSX_SDK_VERSION) -ge 101200 || echo nope), \
 				$(call gb_Helper_optional,AVMEDIA,avmedia/source/quicktime/avmediaQuickTime) \
 			) \
 		) \
