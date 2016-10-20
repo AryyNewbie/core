@@ -54,7 +54,7 @@ Then applications
 
 Module    | Description
 ----------|-------------------------------------------------
-desktop/  | this is where the 'main' for the application lives, init / bootstrap. the name dates back to an ancient StarOffice that also drew a desktop
+desktop/  | this is where the 'main' for the application lives, init / bootstrap. The name dates back to an ancient StarOffice that also drew a desktop
 sw/       | Writer
 sc/       | Calc
 sd/       | Draw / Impress
